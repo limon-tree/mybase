@@ -1,0 +1,21 @@
+@startuml
+
+participant 初始化模块
+
+participant SPIFlash驱动
+
+participant SFUD模块
+
+participant IO设备管理器
+
+初始化模块->SPIFlash驱动: 初始化SPIFlash spiflash_init()
+
+SPIFlash驱动->IO设备管理器: 创建并注册SPI从设备 rt_device_register()
+
+初始化模块->SFUD模块: 探测设备rt_sfud_flash_probe()
+
+SFUD模块->IO设备管理器: 查找SPIFlash从设备rt_device_find()
+
+SFUD模块->IO设备管理器: 创建并注册块设备rt_device_register()
+
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+
+participant Application
+participant DFS
+participant Device
+
+Application->DFS: dfs_mkfs()
+activate Application
+
+DFS-->Application
+deactivate Application
+activate DFS
+
+DFS->Device: rt_device_find()
+activate Device
+deactivate DFS
+
+Device-->DFS
+deactivate Device
+activate DFS
+
+@enduml

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--  <title>transparent-404page.html</title> -->
+    <title>页面跳转中</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" src="./_scripts/db.json"></script>
+
+
+    <style type="text/css">
+        a, fieldset, img {
+            border: 0;
+        }
+
+        a {
+            color: #221919;
+            text-decoration: none;
+            outline: none;
+            opacity: 1;
+            display: block;
+        }
+
+        a.link {
+            text-shadow: 0px 1px 2px white;
+            font-weight: 600;
+            color: #3366cc;
+            opacity: 1;
+        }
+
+        a:hover {
+            color: #3366cc;
+            text-decoration: underline;
+        }
+
+        body {
+            font-size: 24px;
+            color: #B7AEB4;
+        }
+
+        body a.link, body h1, body p {
+            -webkit-transition: opacity 0.5s ease-in-out;
+            -moz-transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #wrapper {
+            text-align: center;
+            margin: 100px auto;
+            width: 594px;
+        }
+
+        h1 {
+            text-shadow: 0px 1px 2px white;
+            font-size: 24px;
+            opacity: 0;
+        }
+
+        img {
+            -webkit-transition: opacity 1s ease-in-out;
+            -moz-transition: opacity 1s ease-in-out;
+            transition: opacity 1s ease-in-out;
+            height: 202px;
+            width: 199px;
+            opacity: 0;
+        }
+
+        p {
+            text-shadow: 0px 1px 2px white;
+            font-weight: normal;
+            font-weight: 200;
+            opacity: 0;
+        }
+
+        .fade {
+            opacity: 1;
+        }
+
+        @media only screen and (min-device-width: 320px) and
+        (max-device-width: 480px) {
+            #wrapper {
+                margin: 40px auto;
+                text-align: center;
+                width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="wrapper">
+    <a href="">
+        <img class="fade" src="./_media/404page.png">
+    </a>
+    <div>
+
+        <p class="fade">页面自动<a id="href" href="">跳转</a>等待<b id="wait">1</b>秒</p>
+<script type="text/javascript">
+function getQueryVariable(variable)
+{
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i=0;i<vars.length;i++) {
+        var pair = vars[i].split("=");
+        if(pair[0] == variable){return pair[1];}
+    }
+    return(false);
+}
+		
+(function () {
+	var prefix = "/document/site/"
+
+	// 自动获取当前路径
+	var request_url = window.location.href;
+	request_base = request_url.substring(0, request_url.indexOf(prefix));
+	request_base += prefix;
+	// console.log('request_base: ' + request_base); // request_base: https://www.rt-thread.org/document/site/
+
+	var request_uri = getQueryVariable('request_uri');
+	request_uri = request_uri.replace(prefix, ""); // programming-manual/env/env/
+
+    var new_uri = url[request_uri];
+	if (new_uri === undefined){
+		new_uri = 'undefined'; // 如果末完全匹配
+		for(let key in url){
+			// console.log('key: ' + key);
+			// console.log('value: ' + url[key]);
+			
+			if(request_uri.indexOf('.md') > 0) {
+				request_uri = request_uri.substring(0, request_uri.indexOf('.md'));
+			}
+			
+			if(key.indexOf('.md') > 0) {
+				var key_dup = key.substring(0, key.indexOf('.md'));
+			}
+			
+			if(request_uri.indexOf(key_dup) == 0) {
+				new_uri = url[key]; // 匹配前缀也可以
+				// console.log('request_uri.indexOf(key) == 0, new_uri: ' + new_uri);
+			}
+			if(key_dup.indexOf(request_uri) == 0) {
+				new_uri = url[key]; // 匹配前缀也可以
+				// console.log('key.indexOf(request_uri) == 0, new_uri: ' + new_uri);
+			}
+		}
+	}
+	else {
+		// console.log('perfect match, new_uri: ' + new_uri);
+	}
+	new_url = request_base + "#/" + new_uri;
+	// console.log('new_uri: ' + new_uri);
+	// console.log('new_url: ' + new_url);
+	
+    document.getElementById('href').href = new_url; // 更新新链接
+    var wait = document.getElementById('wait'), href = new_url;
+
+    var interval = setInterval(function () {
+		// console.log('new href: ' + href);
+        var time = --wait.innerHTML;
+        if (time <= 0) {
+            clearInterval(interval);
+            location.href = href;
+            // console.log(href);
+        }
+    }, 1000);
+})();
+</script>
+    </div>
+</div>
+</body>
+</html>

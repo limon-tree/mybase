@@ -1,0 +1,36 @@
+
+<!-- docs/_sidebar.md -->
+
+- RT-Thread Studio
+  - [快速开始](/development-tools/rtthread-studio/um/studio-user-begin.md)
+  - [用户手册](/development-tools/rtthread-studio/um/studio-user-manual.md)
+  - 应用开发
+    - [快速上手](/development-tools/rtthread-studio/applications/quick-start/rtthread-studio-quick-start.md)
+    - [应用开发示例 - 线程](/development-tools/rtthread-studio/applications/thread/rtthread-studio-thread.md)
+    - [应用开发示例 - 串口设备](/development-tools/rtthread-studio/applications/uart/rtthread-studio-uart.md)
+  - 驱动开发
+    - [驱动概况](/development-tools/rtthread-studio/drivers/drv-list/support-driver-list.md)
+    - [PIN 设备](/development-tools/rtthread-studio/drivers/pin/rtthread-studio-pin.md)
+    - 串口设备
+      - [nano 版](/development-tools/rtthread-studio/drivers/uart/nano-v3.1.3/rtthread-studio-uart-nano-v3.1.3.md)
+      - [完整版](/development-tools/rtthread-studio/drivers/uart/v4.0.2/rtthread-studio-uart-v4.0.2.md)
+    - I2C 设备
+      - [软件 I2C](/development-tools/rtthread-studio/drivers/soft-i2c/rtthread-studio-soft-i2c.md)
+    - [SPI 设备](/development-tools/rtthread-studio/drivers/spi/rtthread-studio-spi.md)
+    - [ETH 设备](/development-tools/rtthread-studio/drivers/eth/rtthread-studio-eth.md)
+    - [USB Device 设备](/development-tools/rtthread-studio/drivers/usb-device/rtthread-studio-usb-device.md)
+    - [其它驱动](/development-tools/rtthread-studio/drivers/cubemx/rtthread-studio-cubemx.md)
+  - [精彩项目集合](/development-tools/rtthread-studio/applications/project-collection/project-collection.md)
+  - [精彩文章集合](/development-tools/rtthread-studio/applications/forum-article/forum-article.md)
+  - [精彩博客推荐](/development-tools/rtthread-studio/applications/user-blog/user-blog.md)
+  - [常见问题](/development-tools/rtthread-studio/faq/studio-faq.md)
+  - [更新日志](/development-tools/rtthread-studio/changelog/changelog.md)
+- RT-Thread构建与配置系统
+  - [简述](/development-tools/build-config-system/summary.md)
+  - [Kconfig](/development-tools/build-config-system/Kconfig.md)
+  - [SCons](/development-tools/build-config-system/SCons.md)
+- Env 开发工具
+  - [Env 用户手册](/development-tools/env/env.md)
+- 其他
+    - [Cmake编译](/development-tools/other/cmake.md)
+    - [ArmClang编译](/development-tools/other/armclang.md)

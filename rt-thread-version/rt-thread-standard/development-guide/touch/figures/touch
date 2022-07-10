@@ -1,0 +1,31 @@
+@startuml
+
+participant 应用程序
+participant IO设备管理器
+participant Touch设备驱动框架
+participant Touch设备驱动
+
+Touch设备驱动->Touch设备驱动: 创建Touch设备
+
+Touch设备驱动->Touch设备驱动框架: 注册Touch设备 rt_hw_touch_register()
+
+Touch设备驱动框架->IO设备管理器: 注册IO设备 rt_device_register()
+
+应用程序->IO设备管理器: 查找Touch设备 rt_device_find()
+
+应用程序->IO设备管理器: 打开Touch设备 rt_device_open()
+IO设备管理器->Touch设备驱动框架:rt_touch_open()
+Touch设备驱动框架->Touch设备驱动: rt_touch_irq_init()
+
+应用程序->IO设备管理器: 读取Touch设备数据 rt_device_read()
+IO设备管理器->Touch设备驱动框架:rt_touch_read()
+Touch设备驱动框架->Touch设备驱动: touch_readpoint()
+
+应用程序->IO设备管理器: 控制Touch设备 rt_device_control()
+IO设备管理器->Touch设备驱动框架:rt_touch_control()
+Touch设备驱动框架->Touch设备驱动: touch_control()
+
+应用程序->IO设备管理器: 关闭Touch设备 rt_device_close()
+IO设备管理器->Touch设备驱动框架:rt_touch_close()
+Touch设备驱动框架->Touch设备驱动: rt_touch_irq_disable()
+@enduml

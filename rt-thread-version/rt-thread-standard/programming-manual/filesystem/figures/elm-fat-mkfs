@@ -1,0 +1,18 @@
+@startuml
+
+participant 应用程序
+participant DFS
+participant elmFAT文件系统
+participant IO设备管理器
+participant SFUD模块
+participant SPIFlash驱动
+
+应用程序->DFS: 格式化 dfs_mkfs()
+
+DFS->IO设备管理器: 查找设备 rt_device_find()
+DFS->elmFAT文件系统: FAT格式化 dfs_elm_mkfs()
+elmFAT文件系统->IO设备管理器: rt_device_write()
+IO设备管理器->SFUD模块: rt_sfud_write()
+SFUD模块->SPIFlash驱动: spiflash_write()
+
+@enduml

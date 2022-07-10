@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
+  <title>RT-Thread 文档中心</title>
+  <link rel="icon" href="_media/icon.png">
+  <!-- Theme -->
+  <link rel="stylesheet" href="_styles/vue.css">
+  <link rel="stylesheet" href="_styles/sidebar.min.css">
+  <!-- <link rel="stylesheet" href="_styles/sweetalert.min.css" type='text/css' media='all' /> -->
+</head>
+<style>
+  .pt-message {
+    display: none;
+    width: 100%;
+    height: 50px;
+    background: #ffe8d8;
+    color: #f86e45;
+    text-align: center;
+    border:1px dotted #fdab63;
+    z-index: 99999;
+  }
+  .pt-message p {
+    margin: 0;
+    line-height: 50px;
+    font-size: 20px;
+  }
+</style>
+<body>
+  <div id="pt-message" class="pt-message">
+    <p id="msg"></p>
+  </div>
+  <div id="app">Loading ...</div>
+  <script>
+    window.$docsify = {
+      coverpage: true,
+      auto2top: true,
+      executeScript: true,
+      relativePath: true,
+      loadNavbar: true,
+      loadSidebar: true,
+      mergeNavbar: true,
+      maxLevel: 6,
+      subMaxLevel: 2,
+      repo: 'https://github.com/RT-Thread/rt-thread',
+      name: '<span>RT-Thread 文档中心</span>',
+      logo: '_media/logo.png height = "30px"',
+      coverpage: ['/'],
+      requestHeaders: {
+        'cache-control': 'max-age=5',
+      },
+      scrollToTop: {
+        auto: true,
+        text: 'Top',
+        right: 15,
+        bottom: 15,
+        offset: 500
+      },
+      'flexible-alerts': {
+        style: 'flat'
+      },
+      alias: {
+        '/rt-thread-version/rt-thread-nano/.*/_sidebar.md': '/rt-thread-version/rt-thread-nano/_sidebar.md',
+        '/rt-thread-version/rt-thread-smart/.*/_sidebar.md': '/rt-thread-version/rt-thread-smart/_sidebar.md',
+        '/rt-thread-version/rt-thread-standard/.*/_sidebar.md': '/rt-thread-version/rt-thread-standard/_sidebar.md',
+        '/development-tools/.*/_sidebar.md': '/development-tools/_sidebar.md',
+        '/rt-thread-version/rt-thread-nano/.*/_navbar.md': '/rt-thread-version/rt-thread-nano/_navbar.md',
+        '/rt-thread-version/rt-thread-smart/.*/_navbar.md': '/rt-thread-version/rt-thread-smart/_navbar.md',
+        '/rt-thread-version/rt-thread-standard/.*/_navbar.md': '/rt-thread-version/rt-thread-standard/_navbar.md',
+        '/development-tools/.*/_navbar.md': '/development-tools/_navbar.md',
+        '/other/.*/_navbar.md': '/other/novice-guide/_navbar.md',
+      },
+      tabs: {
+        persist: true,      // default
+        sync: true,      // default
+        theme: 'classic', // default
+        tabComments: true,      // default
+        tabHeadings: true       // default
+      },
+      search: {
+        placeholder: '搜索',
+        noData: '找不到结果!',
+        depth: 3
+      },
+      formatUpdated: '{YYYY}-{MM}-{DD} {HH}:{mm}',
+      search: {
+        noData: {
+          '/': '没有结果'
+        },
+        paths: 'auto',
+        placeholder: {
+          '/': '搜索'
+        }
+      },
+      plugins: [
+        function (hook, vm) {
+            hook.ready(function (){
+            // true = show debug log
+            let TARGET_QUERY = 'id'
+            let SCROLL_DELAY = 1500 // in milisecond
+            let location = window.location
+            let currentUrlWithoutHash = new URL(
+                    location.origin+location.pathname+
+                    location.search+location.hash.substring(1)
+            )
+            let urlQueryParam = currentUrlWithoutHash.searchParams
+            let isUrlHasIdQuery = urlQueryParam.has(TARGET_QUERY)
+            if(isUrlHasIdQuery){
+              let urlId = urlQueryParam.get(TARGET_QUERY)
+              // run delayed, to make sure everything loaded
+              setTimeout(function() {
+                try{
+                  if(window.localStorage.getItem(urlId)==undefined)
+                  {
+                    location.reload()
+                    window.localStorage.setItem(urlId, '1');
+                  }
+                } catch(e){}
+              }, SCROLL_DELAY);
+              setTimeout(function(){
+                window.localStorage.removeItem(urlId)
+              },2000)
+            }
+          }),
+          hook.beforeEach(function (html) {
+            //获取浏览器基本属性
+            var brower = navigator.userAgent;
+            //如果不是google、火狐、指南针浏览器，就提示。
+            if (brower.toLowerCase().indexOf("chrome")<0 && brower.toLowerCase().indexOf("firefox")<0 && brower.toLowerCase().indexOf("safari")<0){
+              var msg = document.getElementById("msg");
+              msg.innerHTML = "你的浏览器不兼容，请使用 Chrome,Firefox,Safari 等浏览器浏览。";
+              document.getElementsByClassName("pt-message")[0].style.display = "block";
+              setInterval('transTip()', 1000);
+            }
+            var url = 'https://gitee.com/rtthread/docs-online/blob/master/' + vm.route.file
+            var editHtml = '[:pencil: 修改此文档 ](' + url + ') &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[:page_with_curl:《修改规范说明》](/README?id=在线文档开发介绍)\n'
+
+            return '\n\n'+
+              editHtml +
+              html +
+              '\n\n----\n' +
+              '>我有疑问： [RT-Thread 官方论坛](https://club.rt-thread.org/)'
+          })
+        }
+      ]
+    }
+  </script>
+  <script src="_scripts/docsify.min.js"></script>
+  <script src="_scripts/search.min.js"></script>
+  <script src="_scripts/emoji.min.js"></script>
+  <script src="_scripts/prism-c.min.js"></script>
+  <script src="_scripts/docsify-tabs.js"></script>
+  <script src="_scripts/docsify-sidebar-collapse.min.js"></script>
+  <script src="_scripts/docsify-scroll-to-top.min.js"></script>
+  <script src="_scripts/docsify-copy-code.js"></script>
+  <!-- <script src="_scripts/sweetalert.min.js"></script>
+  <script>
+    document.body.oncopy = function () {
+      swal("复制成功 🎉",
+        "如果你觉得本仓库不错，那就来 GitHub 给个 Star 吧 😊",
+        "success");
+    };
+  </script> -->
+<script src="_scripts/zoom-image.min.js"></script>
+<script src="_scripts/external-script.min.js"></script>
+<!-- <script src="_scripts/sweetalert.min.js"></script> -->
+<script src="_scripts/docsify-plugin-flexible-alerts.min.js"></script>
+
+<script>
+  var im=0;
+
+  function transTip() {
+    if(im>3)
+      document.getElementsByClassName("pt-message")[0].style.display = "none";
+    im++;
+  }
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?0e240e5a81fc0731ec2e166298d176e1";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+  
+</body>
+
+</html>

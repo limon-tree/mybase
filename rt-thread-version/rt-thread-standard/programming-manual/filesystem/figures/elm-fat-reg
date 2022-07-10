@@ -1,0 +1,15 @@
+@startuml
+
+participant 初始化模块
+
+participant DFS
+
+participant elmFAT文件系统
+
+初始化模块->DFS: 初始化DFS DFS_init()
+
+初始化模块->elmFAT文件系统: 初始化FAT文件系统 elm_init()
+
+elmFAT文件系统->DFS: 注册FAT文件系统 dfs_register()
+
+@enduml
