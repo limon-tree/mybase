@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta charset="UTF-8">
-  <title>RT-Thread 文档中心</title>
+  <title>个人知识库 文档中心</title>
   <link rel="icon" href="_media/icon.png">
   <!-- Theme -->
   <link rel="stylesheet" href="_styles/vue.css">
@@ -44,9 +44,9 @@
       loadSidebar: true,
       mergeNavbar: true,
       maxLevel: 6,
-      subMaxLevel: 2,
-      repo: 'https://github.com/RT-Thread/rt-thread',
-      name: '<span>RT-Thread 文档中心</span>',
+      subMaxLevel: 3,
+      repo: 'https://github.com/limon-tree/mybase',
+      name: '<span>个人知识库 文档中心</span>',
       logo: '_media/logo.png height = "30px"',
       coverpage: ['/'],
       requestHeaders: {
@@ -72,6 +72,8 @@
         '/rt-thread-version/rt-thread-standard/.*/_navbar.md': '/rt-thread-version/rt-thread-standard/_navbar.md',
         '/development-tools/.*/_navbar.md': '/development-tools/_navbar.md',
         '/other/.*/_navbar.md': '/other/novice-guide/_navbar.md',
+		'/docs/mylearning/.*/_sidebar.md': '/docs/mylearning/_sidebar.md',
+		'/docs/mylearning/.*/_navbar.md': '/docs/mylearning/_navbar.md',
       },
       tabs: {
         persist: true,      // default
@@ -135,14 +137,14 @@
               document.getElementsByClassName("pt-message")[0].style.display = "block";
               setInterval('transTip()', 1000);
             }
-            var url = 'https://gitee.com/rtthread/docs-online/blob/master/' + vm.route.file
+            var url = 'https://github.com/limon-tree/mybase/blob/main/' + vm.route.file
             var editHtml = '[:pencil: 修改此文档 ](' + url + ') &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[:page_with_curl:《修改规范说明》](/README?id=在线文档开发介绍)\n'
 
             return '\n\n'+
               editHtml +
               html +
               '\n\n----\n' +
-              '>我有疑问： [RT-Thread 官方论坛](https://club.rt-thread.org/)'
+              '>我有疑问： [联系作者](https://github.com/limon-tree/mybase)'
           })
         }
       ]
