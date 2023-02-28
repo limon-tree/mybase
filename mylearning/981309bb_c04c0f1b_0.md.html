@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="Application" content="myBase Desktop">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css">
+		<link rel="stylesheet" type="text/css" href="1ea0d80_15be03ec_0.css">
+
+		<!-- highlight.js begins -->
+		<script src="1ea0d80_3c6d0691_0.js" type="text/javascript"></script>
+		<script>
+			if(window.app && window.app.getConfigValByKey){
+				hljs.configure({tabReplace: function(n){if(n<1 || n>32) n=4; var r=""; while(n-- > 0) r+=" "; return r;}(parseInt(window.app.getConfigValByKey("HtmlEdit.TabWidth")))});
+			}
+			hljs.initHighlightingOnLoad();
+		</script>
+		<!-- highlight.js ends -->
+
+		<!-- MathJax begins -->
+		<!-- DO NOT MAKE ANY CHANGES TO THE Begin/End COMMENT TAGS -->
+		<!-- MathJax CDN hosted at cdn.mathjax.org will be shutting down on April 30, 2017. -->
+		<!-- https://www.mathjax.org/cdn-shutting-down/ -->
+		<!-- https://cdn.mathjax.org/mathjax/latest/MathJax.js -->
+		<!-- https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js -->
+		<!-- https://cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js -->
+		<script type="text/x-mathjax-config">
+			var nScale=150, nMinScale=50;
+			if(MathJax && MathJax.Hub && MathJax.Hub.Config){
+				MathJax.Hub.Config({
+
+					tex2jax: {
+						processEscapes: true
+						, inlineMath: [ ['$', '$'] ]
+						, displayMath: [ ['$$', '$$'] ]
+						, skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code','a']
+					}
+
+					, CommonHTML: {scale: nScale, minScaleAdjust: nMinScale}
+					, 'HTML-CSS': {scale: nScale, minScaleAdjust: nMinScale}
+					, NativeMML: {scale: nScale, minScaleAdjust: nMinScale}
+					, SVG: {scale: nScale, minScaleAdjust: nMinScale}
+					, PreviewHTML: {scale: nScale, minScaleAdjust: nMinScale}
+
+					, showProcessingMessages: true
+				});
+			}
+		</script>
+		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+		<!-- MathJax ends -->
+
+	</head>
+
+	<body>
+
+	<article><p>﻿# gdb调试任意函数</p>
+<p>使用gdb调试时，有的函数只在某些路径上会执行到，而触发这些路径执行的条件构造起来比较麻烦，比如某个server在接收到READ请求时，会调用do_read进行响应，这时如果我们想调试do_read函数，就必须在客户端构造一个READ请求来触发。</p>
+<pre><code class="lang-c++">int do_read（const ReadRequest&amp; req);
+</code></pre>
+<p>假设我们知道do_read调用时参数ReadRequest的具体内容，能否直接使用gdb显式的调试do_read，且看下面这个例子。</p>
+<p>main函数里没有显式调用get_capacity函数，如果我们想要调试这个函数，最直观的一种方式，当然是将get_capacity加到main里，让其出现在调用路径中即可调试。</p>
+<p>gdb的jump可以让程序跳转到任意位置执行，实验了一下，结果是跳转到get_capacity里开始执行时，出现Segmentation fault，因为参数Box的空间没有分配。在了解参数传递顺序及栈布局的情况下，可通过一些出栈、入栈操作，在jump到get_capacity前将参数先准备好，这样get_capacity调用时，就不会有问题，但这样做太过复杂。</p>
+<pre><code class="lang-c++">struct Box { int length; int width; int height; }; 
+int get_capacity(const struct Box&amp; box) { 
+    int capacity = box.length * box.width * box.height; printf(&quot;box capacity: %d\n&quot;, capacity); return capacity; 
+} 
+int main() 
+{ 
+    printf(&quot;main called no functions\n&quot;); 
+    return 0; 
+}
+</code></pre>
+<p>gdb的call可以在调试时显式调用函数，需要先把参数准备好。如下所示，在main里设置断点，然后分配出一个box的内存，并对box进行赋值，最后将其最为参数传递给get_capacity函数，get_capacity函数被正确的调用，通过在get_capacity设置断点即可对它进行调试。</p>
+<pre><code>(gdb) set $box = (Box*)malloc(sizeof(Box)) 
+(gdb) set $box-&gt;length = 3 
+(gdb) set $box-&gt;width = 4 
+(gdb) set $box-&gt;height = 5 
+(gdb) call get_capacity(*$box) box capacity: 60 $1 = 60
+</code></pre><p>针对上面这种方式，存在两个疑问，求达人解惑。</p>
+<p>直接使用box对象而不是指针时，传递时有问题，如下：</p>
+<pre><code class="lang-c++">(gdb) set $box = *(Box*)malloc(sizeof(Box)) 
+(gdb) call get_capacity($box) Attempt to take address of value not located in memory.
+</code></pre>
+<p>不能直接使用new来构造对象，对于复杂的类（尤其是拥有虚函数的情况），上面的方式没办法工作。</p>
+<pre><code class="lang-c++">(gdb) set $box = new Box() A syntax error in expression, near `new Box()&#39;.
+</code></pre>
+</article>
+
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

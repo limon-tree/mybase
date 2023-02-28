@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div style="text-align: left;"><span style="color: #333333; font-family: -apple-system, BlinkMacSystemFont, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+				<div><span style="font-size: 18pt"><strong>1. 关于 OpenWrt</strong></span>
+				</div>
+				<div>当Linksys 释放 WRT54G/GS 的源码后，网上出现了很多不同版本的 Firmware 去增强原有的功能。大多数的 Firmware 都是99%使用 Linksys的源码，只有1%是加上去的，每一种 Firmware 都是针对特定的市场而设计，这样做有2个缺点，第一个是难以集合各版本Firmware的长处，第二个是这版本距离 Linux 正式发行版越来越远。
+				</div>
+				<div>OpenWrt 选择了另一条路，它从零开始，一点一点的把各软件加入去，使其接近 Linksys 版 Firmware的功能，而OpenWrt 的成功之处是它的文件系统是可写的，开发者无需在每一次修改后重新编译，另它更像一个小型的 Linux 电脑系统，也加快了开发速度。
+				</div>
+				<div><span style="font-size: 18pt"><strong>2. 为什么使用 OpenWrt</strong></span>
+				</div>
+				<div>因为 Linux 为我们提供了很多免费的软件，我们可以用一个很低的价钱购买像WRT54G的硬件，做成一个小型的 Linux 系统，现在OpenWrt已经提供了100多个已编译好的软件，而且数量还在不断增加，而 OpenWrt SDK 更简化了开发软件的工序
+				</div>
+				<div><span style="font-size: 18pt"><strong>3. OpenWrt 的历史</strong></span>
+				</div>
+				<div>OpenWrt 项目由 2004 年 1 月开始, 第一个版本是基于 Linksys 提供的 GPL 源码及 uclibc 中的 buildroot 项目, 这个版本称为 &amp;ldquo;stable&amp;rdquo; 版, 在网上至今仍有很多项目使用这个版本, 较为有名 Freifunk-Firmware 和 Sip@Home.
+				</div>
+				<div>到了2005年初, 一些新的开发人员加入了这项目, 几个月后他们释出了第一个 &amp;ldquo;experimental&amp;rdquo; 版本, 这和以前版本不同的是, 这版本差不多完全舍弃了 Linksys 的 GPL 源码, 使用了 buildroot2 作为核心技术, 将 OpenWrt 完全模块化，OpenWrt 使用 Linux 正式发行的核心源码（2.4.30），加上了一些补丁和网络驱动，开发队伍更为OpenWrt添加了许多免费的工具，你可以直拉把Image写入 Flash (mtd)里面，设定无线功能和VLAN交换功能，这个版本名为&amp;ldquo;White Russian&amp;rdquo;，而1.0版本大概于2005年底公布。
+				</div>
+				<div><span style="font-size: 18pt"><strong>4. 为什么是OpenWrt？</strong></span>
+				</div>
+				<div>Linksys WRT54G 是一个几乎在任何电脑商场都可以买到的无线路由器, 只需拿出4-5百元, 你就可以拥有一个配备 200MHz CPU, 4MB Flash, 16MB Ram的嵌入式开发系统, 而且在你完成你的开发后, 你还可以应用在生活上, 一点都不浪费。由于它使用 Linux 作为操作系统, 并公开源码及驱动, 在网络上已有很多为它而设计的开源项目, 包括HyperWRT, OpenWRT, SIP Phone等等, 实在是学习嵌入式 Linux 的入门级首选。为什么学习OpenWRT?你不需要对 MIPS 处理器有很深入的了解, 也不用懂得如何去设计一个 MIPS 处理器专用的内核, 因为这些在网上已有人为你做好, 你只需懂得如何安装和使用就行了, 不过你也可以去http://www.linux-mips.org 找到相关的资料。如果你对 Linux 系统有一定的认识, 并想学习或接触嵌入式 Linux 的话, OpenWRT很适合你, 你将学会一些无线路由器的基本知识, 以及一般嵌入式 Linux 的开发过程, 你会发现无论是 ARM, PowerPC 或 MIPS 的处理器, 都必需经过以下的开发过程:1. 创建 Linux 交叉编译环境2. 建立 Bootloader3. 移植 Linux 内核4. 建立 Rootfs (根文件系统)5. 安装驱动程序6. 安装软件7. 调试随着 Linux 的成熟, 大量不同的处理器内核和应用软件相继出现, 当你熟悉这些嵚入式 Linux 的基本开发流程后, 你不再局限于 MIPS 处理器和无线路由器, 你可以尝试在其它处理器, 或者非无线路由器的系统移植嵌入式 Linux, 定制合适自己的应用软件, 并建立一个完整的嵌入式产品。
+				</div></span>
+			</div>
+			<div><span style="color: rgb(51, 51, 51); font-family: -apple-system, BlinkMacSystemFont, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"><br /></span>
+			</div>
+			<div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

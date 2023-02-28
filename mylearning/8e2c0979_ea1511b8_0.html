@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><span style="font-size: x-large; font-weight: bold;">大端,小端的判断方法</span>
+		</div>
+		<div>
+			<div>
+				<pre style="padding: 8px;">
+<code><p style="margin:0px;"><span style=" font-weight:600; color:#8b008b;">int</span> test_ip_endian(u32 ipaddr)
+</p><p style="margin:0px;">{
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">char</span> *p = NULL;
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">char</span> buff[<span style=" font-weight:600; color:#4682b4;">16</span>] = {<span style=" font-weight:600; color:#4682b4;">0</span>};
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;">    p = (<span style=" font-weight:600; color:#8b008b;">char</span> *)&amp;ipaddr;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#800080;">#ifndef</span> __LITTLE_ENDIAN
+</p><p style="margin:0px;">        sprintf(buff, <span style=" font-weight:600; color:#2e8b57;">"%d.%d.%d.%d"</span>, (p[<span style=" font-weight:600; color:#4682b4;">0</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">1</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">2</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">3</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>));
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#800080;">#else</span>
+</p><p style="margin:0px;">    <span style=" font-style:italic; color:#778899;">//little endian 处理</span>
+</p><p style="margin:0px;">        sprintf(buff, <span style=" font-weight:600; color:#2e8b57;">"%d.%d.%d.%d"</span>, (p[<span style=" font-weight:600; color:#4682b4;">3</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">2</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">1</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">0</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>));
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#800080;">#endif</span>
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>        
+</p><p style="margin:0px;">    printh(<span style=" font-weight:600; color:#2e8b57;">"ipaddr=%x,buff=%s\n"</span>,ipaddr, buff);
+</p><p style="margin:0px;">    printh(<span style=" font-weight:600; color:#2e8b57;">"p[0]=%d,p[1]=%d,p[2]=%d,p[3]=%d\n"</span>, (p[<span style=" font-weight:600; color:#4682b4;">0</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">1</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">2</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">3</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>));
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">return</span> OK;
+</p><p style="margin:0px;">}</p><p style="-qt-paragraph-type:empty; margin:0px;"><br></p><p style="-qt-paragraph-type:empty; margin:0px;">
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#8b008b;">int</span> test_ip_endian(u32 ipaddr)
+</p><p style="margin:0px;">{
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">char</span> *p = NULL;
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">char</span> buff[<span style=" font-weight:600; color:#4682b4;">16</span>] = {<span style=" font-weight:600; color:#4682b4;">0</span>};
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;">        p = (<span style=" font-weight:600; color:#8b008b;">char</span> *)&amp;ipaddr;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#800080;">#ifndef</span> __LITTLE_ENDIAN
+</p><p style="margin:0px;">        sprintf(buff, <span style=" font-weight:600; color:#2e8b57;">"%d.%d.%d.%d"</span>, (p[<span style=" font-weight:600; color:#4682b4;">0</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">1</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">2</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">3</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>));
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#800080;">#else</span>
+</p><p style="margin:0px;">        <span style=" font-style:italic; color:#778899;">//little endian 处理</span>
+</p><p style="margin:0px;">        sprintf(buff, <span style=" font-weight:600; color:#2e8b57;">"%d.%d.%d.%d"</span>, (p[<span style=" font-weight:600; color:#4682b4;">3</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">2</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">1</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">0</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>));
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#800080;">#endif</span>
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;">    printh(<span style=" font-weight:600; color:#2e8b57;">"ipaddr=%x,buff=%s\n"</span>,ipaddr, buff);
+</p><p style="margin:0px;">    printh(<span style=" font-weight:600; color:#2e8b57;">"p[0]=%d,p[1]=%d,p[2]=%d,p[3]=%d\n"</span>, (p[<span style=" font-weight:600; color:#4682b4;">0</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">1</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">2</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>), (p[<span style=" font-weight:600; color:#4682b4;">3</span>] &amp; <span style=" font-weight:600; color:#4682b4;">255</span>));
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">return</span> 0;
+</p><p style="margin:0px;">}
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#8b008b;">int</span> test_endian(<span style=" font-weight:600; color:#8b008b;">int</span> i)
+</p><p style="margin:0px;">{
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#8b008b;">union</span>{
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">int</span> a;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">char</span> b;
+</p><p style="margin:0px;">}temp;
+</p><p style="margin:0px; -qt-user-state:0;"><span style=" font-style:italic; color:#778899;">/*</span>
+</p><p style="margin:0px; -qt-user-state:0;"><span style=" font-style:italic; color:#778899;">//网络字节序是大端</span>
+</p><p style="margin:0px; -qt-user-state:0;"><span style=" font-style:italic; color:#778899;">big endian PowerPC,IBM,Sun</span>
+</p><p style="margin:0px; -qt-user-state:0;"><span style=" font-style:italic; color:#778899;">little endian x86,DEC</span>
+</p><p style="margin:0px; -qt-user-state:0;"><span style=" font-style:italic; color:#778899;">low---------------&gt;high 0x12345678</span>
+</p><p style="margin:0px; -qt-user-state:0;"><span style=" font-style:italic; color:#778899;">big 0x12 0x34 0x56 0x78</span>
+</p><p style="margin:0px; -qt-user-state:0;"><span style=" font-style:italic; color:#778899;">lit 0x78 0x56 0x34 0x12</span>
+</p><p style="margin:0px;"><span style=" font-style:italic; color:#778899;">*/</span>
+</p><p style="margin:0px;">    temp<span style=" font-weight:600; color:#4682b4;">.</span>a = <span style=" font-weight:600; color:#4682b4;">0x12345678</span>;
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">if</span>(temp<span style=" font-weight:600; color:#4682b4;">.</span>b == <span style=" font-weight:600; color:#4682b4;">0x12</span>)
+</p><p style="margin:0px;">    {
+</p><p style="margin:0px;">        <span style=" font-style:italic; color:#778899;">//大端:低地址存的是数据的高字节数据</span>
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">if</span>(i)
+</p><p style="margin:0px;">            printf(<span style=" font-weight:600; color:#2e8b57;">"Big-endian\n"</span>);
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">else</span>
+</p><p style="margin:0px;">            printf(<span style=" font-weight:600; color:#2e8b57;">"大端模式\n"</span>);
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">return</span> <span style=" font-weight:600; color:#2e8b57;">'B'</span>;
+</p><p style="margin:0px;">    }
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">else</span>
+</p><p style="margin:0px;">    {
+</p><p style="margin:0px;">        printf(<span style=" font-weight:600; color:#2e8b57;">"temp.b=0x%x\n"</span>,temp<span style=" font-weight:600; color:#4682b4;">.</span>b);
+</p><p style="margin:0px;">        <span style=" font-style:italic; color:#778899;">//小端:低地址存的是数据的低字节数据</span>
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">if</span>(i)
+</p><p style="margin:0px;">            printf(<span style=" font-weight:600; color:#2e8b57;">"Little-endian\n"</span>);
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">else</span>
+</p><p style="margin:0px;">            printf(<span style=" font-weight:600; color:#2e8b57;">"小端模式\n"</span>);
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">return</span> <span style=" font-weight:600; color:#2e8b57;">'L'</span>;
+</p><p style="margin:0px;">    }
+</p><p style="margin:0px;">    test_ip_endian(temp<span style=" font-weight:600; color:#4682b4;">.</span>a);
+</p><p style="margin:0px;">    <span style=" font-weight:600; color:#8b008b;">return</span> 0;
+</p></code><p style="margin:0px;"><code>}</code></p></pre>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

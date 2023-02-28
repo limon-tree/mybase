@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="Application" content="myBase Desktop">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css">
+		<link rel="stylesheet" type="text/css" href="1ea0d80_15be03ec_0.css">
+
+		<!-- highlight.js begins -->
+		<script src="1ea0d80_3c6d0691_0.js" type="text/javascript"></script>
+		<script>
+			if(window.app && window.app.getConfigValByKey){
+				hljs.configure({tabReplace: function(n){if(n<1 || n>32) n=4; var r=""; while(n-- > 0) r+=" "; return r;}(parseInt(window.app.getConfigValByKey("HtmlEdit.TabWidth")))});
+			}
+			hljs.initHighlightingOnLoad();
+		</script>
+		<!-- highlight.js ends -->
+
+		
+
+	</head>
+
+	<body>
+
+	<article><h1 id="svn-log-exel-csv">svn log 获取解决问题和特性开发列表 在导入exel/csv</h1>
+<h2 id="1-xml-">1 导出指定时间日志的xml文件格式，便于我们解析</h2>
+<p><code>svn log -r {2020-1-1}:{2021-12-31} --xml &gt; svnlog.xml</code></p>
+<h2 id="2-python-xml-csv-">2 写一个python脚本，解析xml文件为csv格式</h2>
+<h3 id="2-1-python3-xml-python3-getlog2csv-py">2.1 从网上找到python3 解析xml的格式, <code>python3 getlog2csv.py</code></h3>
+<pre><code class="lang-python">#coding:utf-8
+import os
+import hashlib
+import struct
+import sys
+import gzip, io
+
+import xml.etree.ElementTree as ET
+
+tree = ET.parse(&quot;svnlog.xml&quot;)
+
+#根节点
+root = tree.getroot()
+
+#标签名
+print(&#39;root_tag:&#39;, root.tag)
+for log in root:
+    #属性值
+    print(&quot;name:&quot;, log.attrib[&quot;revision&quot;])
+    #标签中内容
+    print(&quot;author:&quot;,log[0].text)
+    print(&quot;date:&quot;,log[1].text)
+    print(&quot;msg:&quot;,log[2].text)
+</code></pre>
+<h3 id="2-2-xml-csv-">2.2 解析xml转成csv格式</h3>
+<p>调试命令  <code>python3 -m pdb getlog2csv.py</code></p>
+<pre><code class="lang-python">#coding:utf-8
+import os
+import hashlib
+import struct
+import sys
+import gzip, io
+
+import xml.etree.ElementTree as ET
+
+tree = ET.parse(&quot;svnlog.xml&quot;)
+
+#根节点
+root = tree.getroot()
+
+
+    #export csv
+def export_csv(root):
+    f_log = open(&quot;svnlog.csv&quot;, &quot;w&quot;)
+    # csv like 
+    f_log.write(&quot;\&quot;revision\&quot;,\&quot;author\&quot;,\&quot;date\&quot;,\&quot;log msg\&quot;\n&quot;)
+    for log in root:
+        text = log.attrib[&quot;revision&quot;]+&quot;,&quot;+log[0].text+&quot;,&quot;+log[1].text,log[2].text
+        f_log.write(log.attrib[&quot;revision&quot;])
+        f_log.write(&quot;,&quot;)
+        f_log.write(log[0].text)
+        f_log.write(&quot;,&quot;)
+
+        f_log.write(log[1].text)
+        f_log.write(&quot;,&quot;)
+        if (log[2].text):
+            f_log.write(&quot;\&quot;&quot;)
+            f_log.write(log[2].text)
+            f_log.write(&quot;\&quot;&quot;)
+        else:
+            f_log.write(&quot;None&quot;)
+        f_log.write(&quot;\n&quot;)
+    f_log.close()
+
+
+#标签名
+print(&#39;root_tag:&#39;, root.tag)
+&#39;&#39;&#39;
+&quot;revision&quot;,&quot;author&quot;,&quot;date&quot;,&quot;log msg&quot;
+1528,liuyuwei,2020-01-16T02:55:16.963750Z,增加mac表获取的间隔时间
+1551,yangjunling,2020-03-06T02:19:23.820315Z,show flash 使用多次获取来避免一次获取不到的情况
+&#39;&#39;&#39;    
+
+export_csv(root)
+</code></pre>
+<h3 id="2-3-xml-execl-execl">2.3 后面发现xml可以直接用execl导出成execl</h3>
+<p>打开execl, 点击 <code>数据-&gt;自其它来源-&gt;xml源导入</code></p>
+<h3 id="2-4-msg-">2.4 msg 简单的识别和过滤</h3>
+<ol>
+<li><p>过滤无效信息</p>
+<p> 包含以下字符的需要过滤(&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;|回退|编译错误|添加注释)</p>
+</li>
+<li><p>正则表达式匹配bug信息</p>
+<p> ^bug[#|:| ]   | Merged revision(s) | </p>
+</li>
+<li><p>正则表达式匹配特性</p>
+<p> 包含以下字符的(特性|功能|开发)</p>
+</li>
+</ol>
+<p>计划使用正则表达式todo</p>
+<p>pdb 调试命令</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>break      b 设置断点</td>
+<td>设置断点</td>
+</tr>
+<tr>
+<td>continue c</td>
+<td>继续执行程序</td>
+</tr>
+<tr>
+<td>list  l</td>
+<td>查看当前行代码段</td>
+</tr>
+<tr>
+<td>step s</td>
+<td>进入函数</td>
+</tr>
+<tr>
+<td>return r</td>
+<td>执行代码直到从当前函数返回</td>
+</tr>
+<tr>
+<td>exit q</td>
+<td>终止并退出</td>
+</tr>
+<tr>
+<td>next n</td>
+<td>执行下一行</td>
+</tr>
+<tr>
+<td>pp</td>
+<td>打印变量的值</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-todo-msg-bug-">3 TODO,指定msg的识别与提取（如bug、特性）</h2>
+<p>正则或者网上有对文本解析,识别,并进行打标签的例子</p>
+</article>
+
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

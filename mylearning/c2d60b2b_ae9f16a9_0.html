@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(十三)：网络音箱之Android篇
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-06-16 21:48
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：我们继续网络音箱的专题，这章将介绍安卓系统下的MP标准软件控制路由器播放音乐。
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; text-align: center;"><a href="http://static.leiphone.com/uploads/2014/06/1209.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>（题图来自toodaylab.com）
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">我们继续网络音箱的专题，这章将介绍安卓系统下的MP标准软件控制路由器播放音乐。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">什么是MP
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MP全称为音乐播放进程(Music Player Daemon)。它是一个可定制化功能强大的服务端播放音乐软件，通过其自身的插件和库系统即可完成通过网络控制播放音乐。MP具备一个自己的控制管理协议，这些协议是基于TCP协议进行传输的。客户端连接到服务器上控制服务端进行处理。MPD表示服务端，MPC表示客户端。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MP是一个完全开放源代码的整体系统，因此有很多操作系统下的客户端，在安卓手机中即可使用MPDroid这个软件控制服务端播放，而如果您需要开发自己的产品，完全可以参考官方的资料自己开发一个控制程序，甚至给服务端增加新的功能。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">使用MP的好处是，只要你的手机连接到家里的路由器上既可以控制播放音乐，而手机还随身携带，这样不影响你扫地啊、煮饭啊等等工作是不是。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MP的官方网站为http://www.musicpd.org/
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">安装MPD服务
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">首先确保你12章的测试和操作OK声卡已经正常工作了。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">然后开始安装软件包，我们教程中使用的是mpd-mini该软件包是mpd的OpenWRT精简版完成了主要的功能，而且也比较节省CPU和内存。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# opkg update<br />root@SmartRouter:/# opkg install mpd-mini
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">为MPD准备文件夹和文件
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第一步:</strong><span>&nbsp;</span>创建必须的文件夹，在这一步，我们选择使用extdisk作为存储位置，这样的好处是上传到系统的文件可以通过Windows文件共享等方式实现。当然你也可以开发一个新的客户端软件实现将手机的音乐同步到服务端上。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">创建音乐文件存放位置
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# mkdir -p /mnt/extdisk/music<br />root@SmartRouter:/# chmod -R 777 /mnt/extdisk/music
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">创建播放列表存放位置
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# mkdir -p /mnt/extdisk/music_playlist<br />root@SmartRouter:/# chmod -R 777 /mnt/extdisk/music_playlist
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">创建播放器数据位置
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# mkdir -p /mnt/extdisk/music_bin<br />root@SmartRouter:/# chmod -R 755 /mnt/extdisk/music_bin
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第二步:</strong><span>&nbsp;</span>创建初始化的文件，这些文件都是mpd所需要使用的
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# touch /mnt/extdisk/music_bin/mpd.db<br />root@SmartRouter:/# touch /mnt/extdisk/music_bin/mpd.log<br />root@SmartRouter:/# touch /mnt/extdisk/music_bin/mpd.error<br />root@SmartRouter:/# #touch /mnt/extdisk/music_bin/mpd.pid<br />root@SmartRouter:/# touch /mnt/extdisk/music_bin/mpdstate<br />root@SmartRouter:/# touch /mnt/extdisk/music_bin/mpd.sql
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">编写MPD的配置文件
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">编写配置文件，MPD目前没有基于UCI格式的配置文件，需要手工创建一个/etc/mpd.conf文件。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">mpd.conf的配置文件涉及到的参数有很多，这里我们一一说明下:
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MPD的基本运行参数：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">参数 值 说明<br />music_directory 路径 音乐文件的存放文件夹位置<br />playlist_directory 路径 音乐播放列表的存放位置，播放列表可以是在设备上创建也可以是通过MPDroid客户端软件创建<br />db_file 文件路径 MPD的数据库文件路径<br />log_file 文件路径 MPD的日志文件路径<br />pid_file 文件路径 MPD的进程号文件路径<br />state_file 文件路径 MPD的状态文件路径<br />sticker_file 文件路径 MPD管理音乐动态信息的文件路径<br />user 帐号 MPD运行时的Linux身份帐号，默认openwrt下只有root<br />group 分组 MPD运行时的Linux身份帐号，默认openwrt下只有root<br />bind_to_address IP地址 MPD监听的IP地址，0.0.0.0表示全部设备的IP<br />port 端口 MPD的监听端口<br />log_level 字符串 日志信息输出的级别，可以填写default,secure,verbose其中verbose表示显示全部日志，信息很多<br />auto_update 字符串 当music_directory中的音乐文件有变化时候自动更新MPD的数据库。可以填写yes或no<br />auto_update_depth 数字 自动更新的时候对文件夹深度的检测，随便写一个值吧只要是数字就可以。<br />audio_buffer_size 数字 音频播放时的缓存大小，默认值为2048<br />buffer_before_play 百分比 音频播放之前的缓存比例。默认值为10%<br />connection_timeout 数字 客户端连接超时，单位秒，默认值为60<br />max_connections 数字 客户端最大连接数量，默认值为10<br />max_playlist_length 数字 播放列表文件允许的最大长度，这个不要弄的太大搞死系统了哦。<br />max_command_list_size 数字 最大list指令尺寸，默认值为2048<br />max_output_buffer_size 数字 最大输出缓存，默认值为8192<br />filesystem_charset 字符串 文件系统的编码，如果你的文件是通过windows网络共享上载的这里填写UTF-8即可。<br />id3v1_encoding 字符串 歌曲的ID3标签名称编码，默认为&quot;ISO-8859-1&quot;
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MPD的输出设备output，该设备配置用来实现对声卡的支持，格式如下:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">audio_output {<br />参数内容<br />}
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">其中的参数内容在我们的开发板上用的上的是对声卡配置部分：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">参数 值 说明<br />type 字符串 输出类型，可选值为: oss，alsa，pulse，pipe，在我们的开发板上为oss<br />name 字符串 设备显示名称，在MPDroid客户端软件上可以显示出来。<br />device 设备路径 oss的设备路径，默认填/dev/sdp<br />format 字符串 播放格式，默认填写为44100:16:2即可，表示44Khz，16位，双声道<br />mixer_type 字符串 混音器类型，我们的开发板默认填写&quot;hardware&quot;<br />mixer_device 设备路径 混音器设备路径，我们的开发板默认填写&quot;/dev/mixer&quot;<br />mixer_control 字符串 混音器的控制，我们的开发板默认填写&quot;PCM&quot;
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在这里，我们举例下配置。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">使用VI编辑器创建/etc/mpd.conf配置文件内容如下：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">music_directory &quot;/mnt/extdisk/music&quot;<br />playlist_directory &quot;/mnt/extdisk/music_playlist&quot;<br />db_file &quot;/mnt/extdisk/music_bin/mpd.db&quot;<br />log_file &quot;/mnt/extdisk/music_bin/mpd.log&quot;<br />pid_file &quot;/var/run/mpd.pid&quot;<br />state_file &quot;/mnt/extdisk/music_bin/mpdstate&quot;<br />sticker_file &quot;/mnt/extdisk/music_bin/mpd.sql&quot;<br />user &quot;root&quot;<br />group &quot;root&quot;<br />bind_to_address &quot;0.0.0.0&quot;<br />port &quot;6600&quot;<br />log_level &quot;default&quot;<br />auto_update &quot;yes&quot;<br />auto_update_depth &quot;8&quot;<br />audio_output {<br />type &quot;oss&quot;<br />name &quot;mycard&quot;<br />device &quot;/dev/dsp&quot;<br />format &quot;44100:16:2&quot;<br />mixer_type &quot;hardware&quot;<br />mixer_device &quot;/dev/mixer&quot;<br />mixer_control &quot;PCM&quot;<br />}<br />#audio_buffer_size &quot;2048&quot;<br />buffer_before_play &quot;10%&quot;<br />connection_timeout &quot;60&quot;<br />max_connections &quot;4&quot;<br />max_playlist_length &quot;1024&quot;<br />max_command_list_size &quot;2048&quot;<br />max_output_buffer_size &quot;4096&quot;<br />filesystem_charset &quot;UTF-8&quot;<br />id3v1_encoding &quot;ISO-8859-1&quot;
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">启动进程准备音乐文件
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第一步: 复制音乐</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">你可以把你喜欢的音乐以文件夹方式存放在/mnt/extdisk/music中，你可以选择使用windows文件共享方式复制音乐文件到系统上来。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第二步: 修正MPD服务的默认音量</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">因为MPD服务的默认音量参数写的有问题会导致音量被放大到100%吓你一跳，所以需要手工方式修正下。<br />用VI编辑器编辑/etc/init.d/mpd文件:<br />找到: [ -x /usr/bin/amixer ] &amp;&amp; /usr/bin/amixer set PCM 40%<br />修改为: [ -x /usr/bin/amixer ] &amp;&amp; /usr/bin/amixer set PCM 35%
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第三步:</strong><span>&nbsp;</span>设置启动服务，如果你需要经常听音乐，就要将服务设置为自动开启，或手工开启。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">设置每次设备自动开启(如果不是总听，就不用自动拉):<br />root@SmartRouter:/# /etc/init.d/mpd enable
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">手工开启一下:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# /etc/init.d/mpd start
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">安装安卓MPDroid客户端
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MPDroid是一个免费的安卓系统下客户端，该客户端可以实现大部分播放功能。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第一步: 安装</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">进入你的安卓市场，搜索MPDroid并且下载安装，如果你的市场中没有可以上网上搜索MPDroid下载到手机中安装。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第二步: 配置</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">首次配置首先要你的无线连接到板子上。打开MPDroid软件后会显示要求配置:<br />a. 选择WLAN based connection<br />b. 选择你当前连接上来的开发板<br />c. 在Host填写开发板的IP地址<br />d. 在Port填写MPD的监听端口<br />e. 退出配置返回主界面
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第三步: 选择要播放的音乐</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">a. 选择主界面左下角的音乐符号，再在屏幕左上角选择Files显示可播放音乐。<br />b. 屏幕中会显示出可播放的音乐或文件夹，这些都是你上传到/mnt/extdisk/music下的音乐文件。<br />c. 在音乐文件或文件夹上长按后会显示选项:<br />add 增加到当前播放列表<br />add and replace 增加到当前播放列表并且替换掉列表中其他的<br />add, replace and play 增加到当前播放列表，并且替换掉其他的，并且立即播放<br />add and play 增加播放<br />add to playlist 增加到一个列表文件(列表文件，跟当前播放列表不是一个意思，列表文件表示存在路由器上的)<br />d. 选择好以后返回主界面，就有音乐文件了，点击就可以播放了。还可以调整音量。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">章节结尾
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MPDroid是一个安卓下可用的播放器软件，MPD的协议也可以完成很多工作，但是毕竟有不完善的地方，首先MPDroid不具备音乐同步通能，不能将音乐同步到服务器上，其次界面是英文的操作比较复杂，hoowa期望有识之士能做一个更完美的客户端项目。因此如果有愿意做这方面的朋友，请不要吝啬，加入我们吧。
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

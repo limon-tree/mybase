@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="Application" content="myBase Desktop">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css">
+		<link rel="stylesheet" type="text/css" href="1ea0d80_15be03ec_0.css">
+
+		<!-- highlight.js begins -->
+		<script src="1ea0d80_3c6d0691_0.js" type="text/javascript"></script>
+		<script>
+			if(window.app && window.app.getConfigValByKey){
+				hljs.configure({tabReplace: function(n){if(n<1 || n>32) n=4; var r=""; while(n-- > 0) r+=" "; return r;}(parseInt(window.app.getConfigValByKey("HtmlEdit.TabWidth")))});
+			}
+			hljs.initHighlightingOnLoad();
+		</script>
+		<!-- highlight.js ends -->
+
+		
+
+	</head>
+
+	<body>
+
+	<article><h1 id="1-vlan-">1 VLAN 技术</h1>
+<p>传统的以太网交换机在转发数据时,采用基于源MAC地址的学习方式,自动学习各个端口连接的主机MAC地址,形成转发表,然后依据此表进行以太网帧的转发,整个转发的过程</p>
+<p>自动完成,所有的端口都可以互访,维护人员无法控制端口之间的转发,例如,要控制B主机不能访问A主机,这 在传统的以太网交换机中无法实现.这也导致了传统的以太网存在以下缺陷.</p>
+<ol>
+<li>网络的安全性差.由于各个端口之间可以直接互访,增加了网络攻击的可能性.</li>
+<li>网络效率低. 用户可能收到大量不需要的报文,这些报文同时消耗网络带宽和客户机CPU资源,例如不必要的广播报文.</li>
+<li>业务扩展能力差. 网络设备平等的对待每台主机的报文,无法实现有差别的服务.例如,无法优先转发用于网络管理的以太网帧.</li>
+</ol>
+<p>鉴于这些缺陷,在以太网中引入了VLAN技术来解决这些问题.本节将对VLAN的基本工作过程进行介绍,包括以下几个方面.</p>
+<ol>
+<li>VLAN的基本概念</li>
+<li>VLAN内部通信原理</li>
+<li>VLAN间通信实现</li>
+<li>通用VALN属性注册协议(Generic VLAN Registration Protocol, GVRP)</li>
+</ol>
+<h2 id="1-1-vlan-">1.1 VLAN简介</h2>
+<p>虚拟局域网(VALN)技术把用户划分为多个逻辑的网络,每个逻辑网络内的用户形成一个组(Group)/组内可以通信,组间不允许通信. 二层转发的单播,多播,广播报文只能在组内转发,并且很容易实现组成员的添加或删除.
+为了实现转发控制, VLAN技术在待转发的以太网帧中添加了VLAN标签,然后设定交换机端口对该标签和帧的处理方式.处理方式包含丢弃帧,转发帧,添加标签,移除标签.
+转发帧时,通过检查以太网报文中携带的VLAN标签是否为该端口允许通过的标签,可判断出该以太网帧是否能够从端口转发. 如图2-2</p>
+<h3 id="1-1-1-vlan-">1.1.1 VLAN的帧格式</h3>
+<p>在以太帧中添加的VLAN标签长度为32位(bit), 将其直接添加在以太网帧头中,IEEE .802.1Q文档中VLAN标签进行了说明.图2-3所示为VLAN帧的格式.</p>
+<p><img src="C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\图像 1.png" alt="">
+VALN标签由TPID和TCI两部分构成,其中TCI中包含了3个字段:PRI,CFI,VLAN ID.下面列出具体说明.</p>
+<ol>
+<li>标签协议标识(Tag Protocol Identifier,TPI):16位,固定取值,0x8100,是IEEE定义的新类型,表明这是一个携带802.1Q标签的帧.</li>
+<li>优先级(Priority):3位,指示以太网帧的优先级.一共有8种优先级,0-7,用于提供有差别的转发服务.</li>
+<li>标准格式指示(Canonical Fromat Ideicator,CFI):1位,用于令牌环/源路由FDDI介质访问中指示地址信息的位次序信息,即先传送的是低位还是高位.</li>
+<li>VALN标识(VALN identifier,VALN ID):12位,取值0~4095,就是VLAN标签.结合交换机端口的VLAN配置,能够控制以太网帧的转发.
+VLAN技术的出现,使得现在的交换网络环境中存在两种报文:没有加上VLAN标记的标准以太网帧(Untagged frame)和有VALN 标记的以太网帧(Tagged frame).</li>
+</ol>
+<p><img src="C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\vlan.png" alt=""></p>
+<h3 id="1-1-2-vlan-">1.1.2 VLAN的划分方式</h3>
+<h4 id="1-1-2-1-">1.1.2.1 基于端口</h4>
+<p>​    最为常用的划分方式，据以太网交换机的端口来划分。</p>
+<h4 id="1-1-2-2-mac">1.1.2.2 基于MAC</h4>
+<p>...TODO</p>
+<h4 id="1-1-2-3-">1.1.2.3 基于子网</h4>
+<h4 id="1-1-2-4-">1.1.2.4 基于协议</h4>
+<p>​    基于协议的VLAN是根据端口接收到的报文所属的协议（族）类型及封装格式来给报文分配不同的VLAN ID。可</p>
+<p>用于划分VLAN的协议族有IP、IPX、AppleTalk（AT），封装格式有Ethernet II、802.3、802.3/802.2 LLC、802.3/802.2 SNAP等</p>
+<p>​    协议VLAN的实现原理如下：</p>
+<p>​    用户配置协议VLAN，并指定归入本VLAN的报文的“协议模板”；设备上可配置一个端口属于一个或多个协议VLAN和普通VLAN。协议模板由报文的封装格式与协议类型共同确定。</p>
+<p>​    设备端口收到untag报文，先识别报文的协议模板，接着确定报文所属的VLAN：</p>
+<ul>
+<li><p>如果端口根本没有配置属于某个协议VLAN，则给报文打端口PVID的tag。</p>
+</li>
+<li><p>如果端口配置了属于某个协议VLAN，且报文的“协议模板”匹配其中某个协议VLAN，则给报文打上该协议的VLAN tag。</p>
+</li>
+<li><p>如果端口配置了属于某些协议VLAN, 但报文的“协议模板”和所有的协议VLAN不匹配，则给报文打上端口PVID的tag。</p>
+<p>  设备端口接收到tag报文，处理方式和基于端口的VLAN一样；端口允许该tag标识的VLAN通过则作正常转发处理；不允许则丢弃报文。</p>
+</li>
+</ul>
+<p><img src="C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\协议vlan.png" alt=""></p>
+<h4 id="1-1-2-5-voice-vlan">1.1.2.5 Voice VLAN</h4>
+<h2 id="1-2-qinq">1.2 QinQ</h2>
+<p>QinQ 报文封装</p>
+<p><img src="C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\qinq.png" alt=""></p>
+</article>
+
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

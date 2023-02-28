@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(三)：选择合适的设备
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-04-30 15:45
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：选择一款合适的开发设备，有几个必须点：1.它要支持官方OpenWRT系统，并且支持的要完善；2.它要具备8MB的FLASH；3.它要具备64MB的RAM；4.它不能是旧货；5.你要在国内能买
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">题记</strong>：蛾儿雪柳黄金缕，笑语盈盈暗香去。众里寻他千百度，蓦然回首，那人却在，灯火阑珊处。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">选板子最纠结。随便上淘宝搜索，有一堆乱七八糟的板子，但是这些板子确大部分都不支持官方OpenWRT，很多都是一些行内人Patch出来之后的成果，所以搭建起来很麻烦。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">认识基本的电路
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">我们先说说，认识基本的电路，不论路由器有多大变化，他一定遵循一个原则“CPU里带的不外挂芯片，CPU里不带的外挂芯片”。对于软件开发者，我们不需要对整个电路十分熟悉或了解。我们只需要了解大概意思即可。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">CPU</strong>
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">一般路由器的电路板，CPU都设计在中间位置，旁边有一颗晶振。目前主流的路由器CPU基本采用BGA封装或QFN封装。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果是功能比较多的会采用BGA封装，他的焊点在芯片下面，如果焊拆CPU需要使用风枪进行。有经验的焊接人员成功率在80%以上(连续学习1-5天即可)。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果是功能比较少或是为了节省成本的使用QFN封装，该封装在PCB贴片工艺上可以使用在两层电路板上(工艺最简单的)降低成本。不过QFN比较脆弱一般难以更换CPU。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">内存</strong>
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">一般在CPU的附近、内存和CPU之间可以看到有很多线在蠕动，大家可以以此辨别内存的位置。内存包括SDRAM、DDR1、DDR2、DDR3等多种类型。
+							</p>
+							<ul style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: disc;">SDRAM类型一般选择TSOP封装，有两排脚，经过培训可以随意焊接，也可以去找个修手机的弄。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">DDR1类型一般也选择TSOP封装的比较多，与SDRAM差不多。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">DDR2类型一般选择BGA封装，修手机的一般也会更换。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">DDR3类型一般选择BGA封装，由于速度非常快已经属于高频设备，用在路由器大多数算性能过剩。
+								</li>
+							</ul>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果想知道内存的容量，可以查看内存的型号，然后上该公司的官方网站上查询容量。一般内存采用bit表示，比如1024Mbit表示内存为128MB。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">&nbsp;存储器</strong>
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">以前还有很多路由器使用Nor Flash做存储器，现在很少了，Nor Flash看起来很像内存，但是内存是修长的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">现在大部分都使用SPI接口的SOP8或SOP16的封装Flash，在主板上很小的有8个脚的那颗芯片，可能就是你要的Flash存储器。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">&nbsp;其他芯片</strong>
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">一个普通路由器，除了上述CPU、内存、存储三个主要芯片外，还有供电模块，再没有多余的芯片。如果你的板子真的有其他芯片，那可能是CPU没有集成所需要的那个功能。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">选择一个教学板
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">理论上只要CPU被支持了，并且拥有8MB的存储器和32MB的内存，就可以流畅运行OpenWRT这个系统，但是如果你想玩得好，配置还是要稍微再高一些。</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在hoowa的教学资料所使用的系统是hoowa为本次教学制作的定制版OpenWRT，该版本与官方标准发行版OpenWRT AA高度兼容，操作方式可以互换。（有些童鞋可能会问，为什么要做定制版OpenWRT呢？原因在于OpenWRT最近版本更迭较频繁，很容易出现新版不兼容旧版命令，定制一个固化的版本可以免于学习时被报错）
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">适合新手的选择</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果你是新手，hoowa推荐你选择跟他用来做教学课程相同的测试板M150，该电路板生产商为Easylink，厂家为本次教学提供完整的支持和服务。购买该电路板请在淘宝上搜索&quot;跟hoowa学做智能路由教学套件&quot;。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">教学板的配置：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">CPU：Atheros 基于MIPS 24Kec架构,主频400 Mhz<br />RAM：DDR2 BGA封装 512Mbits(64MB)<br />FLASH：华邦 8MB SPI FLASH<br />WIFI：CPU内置150Mbps无线芯片，板载150Mbps无线天线<br />USB：2.0接口*3<br />SD：TF 卡接口<br />继电器：两个<br />GPIO接口：20个可定义<br />BUTTON：2个可定义按键
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">适合爱动手的朋友</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">hoowa定制版OpenWRT还兼容一些市面上现有的路由器，这些路由器产品经过动手调整和修改也可以完成教学内容，适合爱动手的朋友们。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">大概可以兼容的型号如下表：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/04/1251.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">由于芯片、电路板设计多少都有一些区别，接口形态也不完全一致，因此这些型号太繁杂hoowa没有经过详细的测试，如果在学习使用过程中遇到问题，还请多动手解决。hoowa也建议大家，选择相关型号时，在淘宝上可以询问卖家是否支持AA版OpenWRT系统，淘宝上很多硬件都只能刷特定二进制固件，因此不适合教学。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;"><strong style="font-style: normal; font-weight: bold;"><span style="line-height: 1.5em;">Elink M150介绍</span></strong>
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; text-align: center;"><a href="http://static.leiphone.com/uploads/2014/04/1243.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>（<span style="line-height: 1.5em;">该方案采用核心板+底板方式设计）</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold; line-height: 1.5em;">底板接口</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/04/port.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">底板接口说明</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; text-align: center;"><strong style="font-style: normal; font-weight: bold;"><a href="http://static.leiphone.com/uploads/2014/04/2143.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a></strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;"><span style="line-height: 1.5em;">底板按键和灯</span></strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;"></strong><a href="http://static.leiphone.com/uploads/2014/04/light.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">底板按键和灯说明</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/04/393.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">在本章，我们主要介绍了下板子的情况。如果十分熟悉的朋友，这章凑合看过就好；如果是第一次的朋友，那就请认真看下， 因为下一章开始我们就要动手了。下一章：“安装系统”，内容包含：TTL、Uboot、硬件启动揭秘、第一次刷机。</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

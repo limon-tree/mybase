@@ -1,0 +1,531 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div><a href="file:///E:/rt/BaiduNetdiskDownload/ota_downloader-master/README_ZH.md">file:///E:/rt/BaiduNetdiskDownload/ota_downloader-master/README_ZH.md</a>
+		</div>
+		<div><br />
+		</div>
+		<div>基于 STM32 的开源 Bootloader 框架 - RT-FOTA
+		</div>
+		<div>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);">简介
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">RT-Thread 官方推出了 STM32 系列单片机的通用 bootloader, 在其网站可以通过网页配置就可以生成 bootloader 的烧录文件，使广大嵌入式工程师不用编写一行代码，就能够轻松完成自己产品的 bootloader 功能。但是由于 RTT 官方的 bootloader 软件<span>&nbsp;</span><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-top: 0px !important; margin-bottom: 0px !important;">RT-OTA</strong><span>&nbsp;</span>是商用性质，不公开源码，不仅仅限制了在其他平台的移植，而且也不方便加入产品的特定功能。本人软件水平有限，但是基于对开源精神的崇拜和 RTT 多年的感情，蒙发出利用业余时间编写一款开源的且基于 RTT 系统 bootloader 通用软件，贡献给大家。
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-top: 0px !important; margin-bottom: 0px !important;">由于 RTT 官方推出的 bootloader 名字叫 RT-OTA，因此为了蹭点 RTT 的流量，我这个 bootloader 名字就叫 RT-FOTA。</strong>
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-top: 0px !important; margin-bottom: 0px !important;">【RT-FOTA 的需求分析】</strong>
+			</p>
+			<ul style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px; padding-left: 0.6667rem;">
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0px 0px 0.2667rem;">
+					<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0px;">开发基于 RTOS 的 bootloader 软件，网上很多牛人会说 bootloader 最好是裸机程序编写，就像 u-boot 一样稳定和可靠。但我个人认为目前 32 位单片机资源丰富，RT-Thread 的稳定和可靠性不言而喻，加之 RTT 的组件丰富，后续功能拓展方便（比如加入网络和 USB 功能）。因此我使用 RT-Thread 的阉割版本 rtt-nano 实现。
+					</p>
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px;">
+					<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0px;">兼容 RTT 官方的 rbl 文件：使用 RTT 官方的打包软件生成下载文件，可以实现加密压缩功能。由于个人水平问题，只能做到尽可能的兼容，比如 RBL 文件里面的 HASH_CODE 我就不知道怎么计算出来的。
+					</p>
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px 0px;">
+					<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0px;">移植方便：由于 RT-FOTA 基于 RT-Thread 开发，因此只要你的平台被 RT-Thread 支持，就可以很方便的移植到。
+					</p>
+				</li>
+			</ul>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-top: 0px !important; margin-bottom: 0px !important;">【RT-FOTA 主要的功能】</strong>
+			</p>
+			<ul style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px; padding-left: 0.6667rem;">
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0px 0px 0.2667rem;">支持 RTT 官方的 RBL 打包软件，使用方式也一致。目前支持包括 CRC32、AES256、quicklz 和 fastlz 功能；
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px;">支持命令行模式（FINSH 组件）和出厂固件恢复；
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px;">支持 FLASH 分区（FAL 组件）；
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px;">支持功能扩展（RTT 组件）；
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px 0px;">其他功能可自行方便扩展；
+				</li>
+			</ul>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-软件开发目录" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E7%9B%AE%E5%BD%95" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>软件开发目录
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">软件开发目录参照 RTT 的目录形式，如下图所示：
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><img src="https://gitee.com/spunky_973/rt-fota/raw/master/figures/dir.png" alt="目录" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); border-style: none; max-width: 100%; margin-top: 0px !important; margin-bottom: 0px !important; cursor: pointer; display: inline-block;" />
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">我原本计划添加 SCONS 进行编译，但目前对 SCONS 的使用还不熟悉，下次再实现，因此暂时使用<span>&nbsp;</span><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-top: 0px !important; margin-bottom: 0px !important;">MDK</strong><span>&nbsp;</span>完成。
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><em style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">可以看到我并未按照 RTT 官方推荐的使用 MDK 或 cube 生成 rtt-nano 的工程，原因是我有强迫症，感觉 IDE 生成的目录很不爽。</em>
+			</p>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-软件配置说明" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E8%BD%AF%E4%BB%B6%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>软件配置说明
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">RT-FOTA 的软件配置仍然集中在 rtconfig.h 中，其中一些. c 文件中有一些默认的配置宏，但可以根据需求进行修改。
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">/* RT-Thread config file */</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#ifndef RT_CONFIG_H__</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_CONFIG_H__</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_THREAD_PRIORITY_MAX  	8</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_TICK_PER_SECOND			1000</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_ALIGN_SIZE   			4</span>
+<span id="LC8" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_NAME_MAX	   				8</span>
+<span id="LC9" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC10" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Kernel Device Object */</span>
+<span id="LC11" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_DEVICE</span>
+<span id="LC12" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_CONSOLE</span>
+<span id="LC13" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_CONSOLEBUF_SIZE          512</span>
+<span id="LC14" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_CONSOLE_DEVICE_NAME      "uart1"</span>
+<span id="LC15" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_VER_NUM 					0x30102</span>
+<span id="LC16" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC17" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_CPU_FFS</span>
+<span id="LC18" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC19" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* RT-Thread Components */</span>
+<span id="LC20" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_COMPONENTS_INIT</span>
+<span id="LC21" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_USER_MAIN</span>
+<span id="LC22" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC23" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_DEBUG_INIT 0</span>
+<span id="LC24" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_OVERFLOW_CHECK</span>
+<span id="LC25" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">// #define RT_USING_HOOK</span>
+<span id="LC26" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">// #define RT_USING_IDLE_HOOK</span>
+<span id="LC27" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC28" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Software timers Configuration */</span>
+<span id="LC29" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_TIMER_SOFT         0</span>
+<span id="LC30" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#if RT_USING_TIMER_SOFT == 0</span>
+<span id="LC31" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#undef RT_USING_TIMER_SOFT</span>
+<span id="LC32" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#endif</span>
+<span id="LC33" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC34" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_TIMER_THREAD_PRIO		4</span>
+<span id="LC35" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_TIMER_THREAD_STACK_SIZE	512</span>
+<span id="LC36" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_TIMER_TICK_PER_SECOND	100</span>
+<span id="LC37" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC38" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC39" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC40" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* IPC(Inter-process communication) Configuration */</span>
+<span id="LC41" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_SEMAPHORE</span>
+<span id="LC42" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_MUTEX</span>
+<span id="LC43" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">//#define RT_USING_EVENT</span>
+<span id="LC44" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">//#define RT_USING_MAILBOX</span>
+<span id="LC45" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">//#define RT_USING_MESSAGEQUEUE</span>
+<span id="LC46" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC47" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Memory Management Configuration */</span>
+<span id="LC48" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_HEAP</span>
+<span id="LC49" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_MEMHEAP</span>
+<span id="LC50" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_SMALL_MEM</span>
+<span id="LC51" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC52" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Finsh Configuration */</span>
+<span id="LC53" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_FINSH</span>
+<span id="LC54" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_USING_MSH</span>
+<span id="LC55" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_USING_MSH_ONLY</span>
+<span id="LC56" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define __FINSH_THREAD_PRIORITY     5</span>
+<span id="LC57" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_THREAD_PRIORITY       (RT_THREAD_PRIORITY_MAX / 8 * __FINSH_THREAD_PRIORITY + 1)</span>
+<span id="LC58" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_THREAD_STACK_SIZE     2048</span>
+<span id="LC59" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_USING_HISTORY</span>
+<span id="LC60" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_HISTORY_LINES	        5</span>
+<span id="LC61" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_USING_SYMTAB</span>
+<span id="LC62" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_USING_AUTH			/* 可配置 FINSH 的 authencation 功能, 防止随意使用 FINSH */</span>
+<span id="LC63" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_DEFAULT_PASSWORD 		"radiation"</span>
+<span id="LC64" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_PASSWORD_MIN			6</span>
+<span id="LC65" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FINSH_PASSWORD_MAX 			16</span>
+<span id="LC66" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC67" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Device Drivers */</span>
+<span id="LC68" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_PIN</span>
+<span id="LC69" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_SERIAL</span>
+<span id="LC70" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">// #define RT_SERIAL_USING_DMA</span>
+<span id="LC71" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_RTC</span>
+<span id="LC72" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_SPI</span>
+<span id="LC73" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_SFUD</span>
+<span id="LC74" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_SFUD_USING_SFDP</span>
+<span id="LC75" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_SFUD_USING_FLASH_INFO_TABLE</span>
+<span id="LC76" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_USING_WDT</span>
+<span id="LC77" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC78" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* RTT 组件配置 */</span>
+<span id="LC79" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* fal package */</span>
+<span id="LC80" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define PKG_USING_FAL</span>
+<span id="LC81" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FAL_DEBUG_CONFIG</span>
+<span id="LC82" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FAL_DEBUG 0</span>
+<span id="LC83" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FAL_PART_HAS_TABLE_CFG</span>
+<span id="LC84" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FAL_USING_SFUD_PORT</span>
+<span id="LC85" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define FAL_USING_NOR_FLASH_DEV_NAME 	"nor_flash0"</span>
+<span id="LC86" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define PKG_USING_FAL_LATEST_VERSION</span>
+<span id="LC87" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define PKG_FAL_VER_NUM 				0x99999</span>
+<span id="LC88" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC89" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Tinycrypt package */</span>
+<span id="LC90" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define TINY_CRYPT_AES</span>
+<span id="LC91" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC92" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Compress package */</span>
+<span id="LC93" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define QLZ_COMPRESSION_LEVEL	3</span>
+<span id="LC94" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC95" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Hardware Drivers Config */</span>
+<span id="LC96" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define SOC_FAMILY_STM32</span>
+<span id="LC97" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define SOC_SERIES_STM32F4</span>
+<span id="LC98" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define SOC_STM32F407ZE</span>
+<span id="LC99" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC100" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* On-chip Peripheral Drivers */</span>
+<span id="LC101" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_USING_GPIO</span>
+<span id="LC102" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_USING_ON_CHIP_FLASH</span>
+<span id="LC103" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_USING_ONCHIP_RTC</span>
+<span id="LC104" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_USING_UART</span>
+<span id="LC105" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_USING_UART1</span>
+<span id="LC106" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_USING_SPI</span>
+<span id="LC107" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_USING_SPI1</span>
+<span id="LC108" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC109" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Onboard Peripheral Drivers */</span>
+<span id="LC110" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_DATAFALSH_CS_PIN 30</span>
+<span id="LC111" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC112" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Board extended module Drivers */</span>
+<span id="LC113" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define BSP_RS485_DIR_PIN 52</span>
+<span id="LC114" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC115" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* RT-FOTA module define */</span>
+<span id="LC116" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_FOTA_SW_VERSION      "1.0.0"</span>
+<span id="LC117" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC118" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* Enable Ymodem OTA */</span>
+<span id="LC119" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define PKG_USING_YMODEM_OTA</span>
+<span id="LC120" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC121" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* 分区名字可以根据自己的需求而定 */</span>
+<span id="LC122" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* FOTA application partition name */</span>
+<span id="LC123" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#ifndef RT_FOTA_APP_PART_NAME</span>
+<span id="LC124" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_FOTA_APP_PART_NAME   "app"</span>
+<span id="LC125" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#endif</span>
+<span id="LC126" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* FOTA download partition name */</span>
+<span id="LC127" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#ifndef RT_FOTA_FM_PART_NAME</span>
+<span id="LC128" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_FOTA_FM_PART_NAME    "fm_area"</span>
+<span id="LC129" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#endif</span>
+<span id="LC130" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* FOTA default partition name */</span>
+<span id="LC131" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#ifndef RT_FOTA_DF_PART_NAME</span>
+<span id="LC132" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_FOTA_DF_PART_NAME    "df_area"</span>
+<span id="LC133" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#endif</span>
+<span id="LC134" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC135" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* 此两项密码必须与 RTT 的打包软件设置一致 */</span>
+<span id="LC136" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/* AES256 encryption algorithm option */</span>
+<span id="LC137" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_FOTA_ALGO_AES_IV  	"0123456789ABCDEF"</span>
+<span id="LC138" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#define RT_FOTA_ALGO_AES_KEY 	"0123456789ABCDEF0123456789ABCDEF"</span>
+<span id="LC139" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">#endif</span></pre>
+				</div>
+			</div>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-rbl-文件说明" class="anchor" href="https://gitee.com/spunky_973/rt-fota#rbl-%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>RBL 文件说明
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">使用过 RTT 官方的 RT-OTA 组件的朋友都知道，下载的不是 bin 文件，而是需要通过 RTT 打包软件 “装饰” 成 rbl 文件之后，才能被 RT-OTA 识别。
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><img src="https://gitee.com/spunky_973/rt-fota/raw/master/figures/pack1.png" alt="RT-OTA 打包软件" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); border-style: none; max-width: 100%; margin-top: 0px !important; margin-bottom: 0px !important; cursor: pointer; display: inline-block;" />
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">RTT 的打包软件可以设置代码加密和压缩，其配置信息都存在 rbl 文件前 96 字节中：
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">rt-fota /&gt;fota show fm_area 0 96</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000000: 52 42 4C 00 00 02 00 00 5E A9 A4 5D 61 70 70 00</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000010: 00 00 00 00 00 00 00 00 00 00 00 00 31 2E 30 2E</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000020: 36 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000030: 00 00 00 00 31 2E 30 2E 36 00 00 00 00 00 00 00</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000040: 00 00 00 00 00 00 00 00 00 00 00 00 43 33 29 0A</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">00000050: 47 08 F6 DA 84 BB 00 00 1C 84 00 00 C4 3D E3 B5</span></pre>
+				</div>
+			</div>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">其具体含义如下：
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">typedef struct {</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	char type[4];				/* RBL 字符头 */</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	rt_uint16_t fota_algo;		/* 算法配置: 表示是否加密或者使用了压缩算法 */</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	rt_uint8_t fm_time[6];		/* 原始 bin 文件的时间戳, 6 位时间戳, 使用了 4 字节, 包含年月日信息 */</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	char app_part_name[16];		/* app 执行分区名 */</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	char download_version[24];	/* 固件代码版本号 */</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	char current_version[24];	/* 这个域在 rbl 文件生成时都是一样的，我用于表示 app 分区当前运行固件的版本号，判断是否固件需要升级 */</span>
+<span id="LC8" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	rt_uint32_t code_crc;		/* 代码的 CRC32 校验值, 它是的打包后的校验值, 即 rbl 文件 96 字节后的数据 */</span>
+<span id="LC9" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	rt_uint32_t hash_val;		/* 估计这个域是指的原始代码本身的校验值，但不知道算法，无法确认，故在程序中未使用 */</span>
+<span id="LC10" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	rt_uint32_t raw_size;		/* 原始代码的大小 */</span>
+<span id="LC11" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	rt_uint32_t com_size;		/* 打包代码的大小 */</span>
+<span id="LC12" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">	rt_uint32_t head_crc;		/* rbl 文件头的 CRC32 校验值，即 rbl 文件的前 96 字节 */</span>
+<span id="LC13" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">} rt_fota_part_head, *rt_fota_part_head_t;</span></pre>
+				</div>
+			</div>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-开机界面" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E5%BC%80%E6%9C%BA%E7%95%8C%E9%9D%A2" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>开机界面
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">RT-FOTA 开机界面如下图：
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><img src="https://gitee.com/spunky_973/rt-fota/raw/master/figures/poweron.png" alt="开机界面" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); border-style: none; max-width: 100%; margin-top: 0px !important; margin-bottom: 0px !important; cursor: pointer; display: inline-block;" />
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">可以看出使用了 RTT 的 SFUD 和 FAL 组件，同时列出了分区变信息。
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><em style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">RT-FOTA 源码公开，你想怎么改就怎么改, 不在受限制：)</em>
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">最后一行是表示在 5 秒钟内，按下 Enter 键，即 0x0d，就可以进入命令行模式：
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><img src="https://gitee.com/spunky_973/rt-fota/raw/master/figures/shell.png" alt="命令行模式" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); border-style: none; max-width: 100%; margin-top: 0px !important; margin-bottom: 0px !important; cursor: pointer; display: inline-block;" />
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">由于 FINSH 具备 authencation 功能，可以设置 shell 密码。具体详见 RTT 相关文档。
+			</p>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-命令行模式" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%A8%A1%E5%BC%8F" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>命令行模式
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">RT-FOTA 的命令行模式使用的 RTT 的 FINSH 组件, 除了 RTT 系统自带命令外，还增加 fota 和 ymdown 命令：
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">**fota 命令 **
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">键入 fota 命令后回车即可看到帮助命令：
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">rt-fota /&gt;fota</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Usage:</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">fota probe                       - probe RBL file of partiton</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">fota show partition addr size    - show 'size' bytes starting at 'addr'</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">fota clone des_part src_part     - clone src partition to des partiton</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">fota exec                        - execute application program</span></pre>
+				</div>
+			</div>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-top: 0px !important; margin-bottom: 0px !important;">probe 参数可以打印出当分区的 RBL 信息：</strong>
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">rt-fota /&gt;fota probe</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] ===== RBL of fm_area partition =====</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | App partition name |         app |</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Algorithm mode     |  AES &amp;&amp; QLZ |</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Firmware version   |       1.0.3 |</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Code raw size      |       48004 |</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Code package size  |       33824 |</span>
+<span id="LC8" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Build Timestamp    |  1571072350 |</span>
+<span id="LC9" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] ===== RBL of df_area partition =====</span>
+<span id="LC10" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | App partition name |         app |</span>
+<span id="LC11" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Algorithm mode     |  AES &amp;&amp; QLZ |</span>
+<span id="LC12" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Firmware version   |       1.0.3 |</span>
+<span id="LC13" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Code raw size      |       48004 |</span>
+<span id="LC14" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] | Code package size  |       33824 |</span>
+<span id="LC15" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">[I/fota] | Build Timestamp    |  1571072350 |</span></pre>
+				</div>
+			</div>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">这里列出了 fm_area 和 df_area 分区中 RBL 文件的主要信息项, 便于开发者查询：
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><em style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">App partition name</em>: 指的是 RTT 打包文件时设置的分区名
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><em style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">Algorithm mode</em><span>&nbsp;</span>: 指的是 RTT 打包文件使用那些算法：AES256/Quicklz/Fastlz
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><em style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">Firmware version</em><span>&nbsp;</span>: 指的是 RTT 打包文件设置的固件版本号
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><em style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">Code raw size</em><span>&nbsp;</span>: 指的代码原始大小
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><em style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">Code package size</em><span>&nbsp;</span>: 指的代码打包后的大小
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><em style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">Build Timestamp</em><span>&nbsp;</span>: 指的代码生成的时间戳
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-top: 0px !important; margin-bottom: 0px !important;">show 参数可以显示分区的具体实际数据，方便调试与检查：</strong>
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">rt-fota /&gt;fota show app 0 96</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000000: C0 08 00 20 E5 57 02 08 5D 04 02 08 5F 04 02 08</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000010: 63 04 02 08 67 04 02 08 6B 04 02 08 00 00 00 00</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000020: 00 00 00 00 00 00 00 00 00 00 00 00 6F 04 02 08</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000030: 71 04 02 08 00 00 00 00 73 04 02 08 75 04 02 08</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">00000040: FF 57 02 08 FF 57 02 08 FF 57 02 08 49 55 02 08</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">00000050: FF 57 02 08 FF 57 02 08 FF 57 02 08 FF 57 02 08</span></pre>
+				</div>
+			</div>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">这里列出了 app 分区 0 到 96 字节的数据
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">**clone 参数是实现分区数据克隆 **
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">rt-fota /&gt;fota clone fm_area df_area</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Clone df_area partition to fm_area partition:</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#########################################################</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#########################################################</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#########################################################</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">#########################################################</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">############################</span>
+<span id="LC8" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">Clone partition success, total 1048576 bytes!</span></pre>
+				</div>
+			</div>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">这里是将 df _ area 分区数据完整的克隆岛 fm _ area 中。
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">**exec 参数是用于执行 app 分区的应用代码 **
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">rt-fota /&gt;fota exec</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Implement application now.</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;"> LCD ID:5510</span></pre>
+				</div>
+			</div>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">**ymdown 命令 **
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;"><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-top: 0px !important;">ymdown</strong><span>&nbsp;</span>是基于 Ymodem 协议的下载命令，使用 RTT 的 ymodem 和 ymodem _ ota 组件实现，其中将 ymodem _ ota.c 中的<span>&nbsp;</span><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder;">DEFAULT_DOWNLOAD_PART</strong><span>&nbsp;</span>设置为需要默认使用分区名，即在使用<span>&nbsp;</span><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder;">ymdown</strong><span>&nbsp;</span>不带参数的情况下就下载到<span>&nbsp;</span><strong style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-weight: bolder; margin-bottom: 0px !important;">DEFAULT_DOWNLOAD_PART</strong><span>&nbsp;</span>分区，也可加分区名作为参数指定下载位置。
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">rt-fota /&gt;ymdown</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Default save firmware on download partition.</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Warning: Ymodem has started! This operator will not recovery.</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Please select the ota firmware file and use Ymodem to send.</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">CCCCCC</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Starting ymodem transfer.  Press Ctrl+C to cancel.</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">  100%      33 KB    6 KB/s 00:00:05       0 Errors</span>
+<span id="LC8" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC9" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Download firmware to flash success.</span>
+<span id="LC10" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Download firmware verify........[OK]</span>
+<span id="LC11" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">Reset system and apply new firmware.</span></pre>
+				</div>
+			</div>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">下载完成后，会自动复位重新启动，将新固件搬运到 app 分区中：
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;"> ____ _____      _____ ___  _____  _</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">|  _ \_   _|    |  ___/ _ \ _   _|/ \</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">| |_) || |_____ | |_  || ||  | | / _ \</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">|  _ &lt; | |_____ |  _| ||_||  | |/ ___ \</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">|_| \_\|_|      |_|   \___/  |_/_/   \_\</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">2016 - 2019 Copyright by Radiation @ warfalcon</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Version: 1.0.0 build Oct 18 2019</span>
+<span id="LC8" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC9" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[SFUD] Find a Winbond flash chip. Size is 16777216 bytes.</span>
+<span id="LC10" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[SFUD] nor_flash0 flash device is initialize success.</span>
+<span id="LC11" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] ==================== FAL partition table ====================</span>
+<span id="LC12" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] | name    | flash_dev    |   offset   |    length  |</span>
+<span id="LC13" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] -------------------------------------------------------------</span>
+<span id="LC14" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] | app     | onchip_flash | 0x00020000 | 0x000e0000 |</span>
+<span id="LC15" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] | fm_area | nor_flash0   | 0x00000000 | 0x00100000 |</span>
+<span id="LC16" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] | df_area | nor_flash0   | 0x00100000 | 0x00100000 |</span>
+<span id="LC17" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] =============================================================</span>
+<span id="LC18" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] RT-Thread Flash Abstraction Layer (V0.4.0) initialize success.</span>
+<span id="LC19" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Please press [Enter] key into shell mode in 5 secs:</span>
+<span id="LC20" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Partition[app] erase start:</span>
+<span id="LC21" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Start to copy firmware from fm_area to app partition:</span>
+<span id="LC22" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">############</span>
+<span id="LC23" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Upgrade success, total 48004 bytes.</span>
+<span id="LC24" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Copy firmware version Success!</span>
+<span id="LC25" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Implement application now.</span>
+<span id="LC26" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;"> LCD ID:5510</span></pre>
+				</div>
+			</div>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-出厂固件恢复" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E5%87%BA%E5%8E%82%E5%9B%BA%E4%BB%B6%E6%81%A2%E5%A4%8D" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>出厂固件恢复
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">恢复出厂固件的方式比较多，本人多年的工程实践经验，倾向于使用外部按键长按后进行出厂固件恢复。出厂固件存储在 df _ area 分区中（分区名在代码中任意设置），长按按键 10s 后 (长按时间在代码中任意设置)，RT-FOTA 会自动解密解压 df _ area 分区代码，并搬运到 app 分区进行执行。
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;">Default firmware key pressed:</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Partition[app] erase start:</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Start to copy firmware from df_area to app partition:</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">############</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Upgrade success, total 48004 bytes.</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/fota] Implement application now.</span>
+<span id="LC8" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;"> LCD ID:5510</span></pre>
+				</div>
+			</div>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-rt-fota-移植" class="anchor" href="https://gitee.com/spunky_973/rt-fota#rt-fota-%E7%A7%BB%E6%A4%8D" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>RT-FOTA 移植
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">RT-FOTA 移植很简单，只要 RT-Thread 源码包中有你的平台的 BSP 包即可：）
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">RT-FOTA 中使用的各种组件的修改也很简单，比如 FAL 和 SFUD 就可以参照 RTT 官方说明，SignalLED 参照源码包里的 README.md 即可。
+			</p>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">RT-FOTA 可以直接使用在 RT-Thread 的完整版搭载，只需要将 * rt _ fota.c*、*rt _ fota.h * 和 * rt _ fota_crc.c * 放入工程中即可实现，然后用 env 配置相关组件即可。
+			</p>
+			<h3 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 17px;"><a id="user-content-编译下载" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E7%BC%96%E8%AF%91%E4%B8%8B%E8%BD%BD" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>编译下载
+			</h3>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">双击 bootloader.uvprojx 文件，打开 MDK5 工程，编译并下载程序到开发板。
+			</p>
+			<blockquote style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px; border-left: 4px solid rgb(221, 221, 221); padding: 0px 15px; color: rgb(119, 119, 119);">
+				<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0px;">工程默认配置使用 JLINK 仿真器下载程序，点击下载按钮即可下载程序到开发板
+				</p>
+			</blockquote>
+			<h3 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 17px;"><a id="user-content-运行结果" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>运行结果
+			</h3>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">下载程序成功之后，系统 RT-FOTA 会运行：
+			</p>
+			<ul style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px; padding-left: 0.6667rem;">
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0px 0px 0.2667rem;">启动后 LED 会常亮；
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px;">如果进入 shell 模式, LED 会 1Hz 闪烁；
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px 0px;">如果进入 upgrade 模式, LED 会 10Hz 闪烁；
+				</li>
+			</ul>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">连接目标板的串口 1 到 PC , 在终端工具里打开相应的串口（115200-8-1-N），复位设备后，可以看到 RT-FOTA 的输出信息:
+			</p>
+			<div class="white" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+				<div class="highlight" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important; margin-bottom: 0px !important;">
+					<pre style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: monospace, monospace; font-size: 12.5px; margin-top: 0px !important; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; background-color: rgb(248, 248, 248); border: 1px solid rgb(204, 204, 204); line-height: 1.37; overflow: auto; padding: 6px 10px; color: rgb(51, 51, 51);">
+<span id="LC1" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-top: 0px !important;"> ____ _____      _____ ___  _____  _</span>
+<span id="LC2" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">|  _ \_   _|    |  ___/ _ \ _   _|/ \</span>
+<span id="LC3" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">| |_) || |_____ | |_  || ||  | | / _ \</span>
+<span id="LC4" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">|  _ &lt; | |_____ |  _| ||_||  | |/ ___ \</span>
+<span id="LC5" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">|_| \_\|_|      |_|   \___/  |_/_/   \_\</span>
+<span id="LC6" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">2016 - 2019 Copyright by Radiation @ warfalcon</span>
+<span id="LC7" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Version: 1.0.0 build Oct 18 2019</span>
+<span id="LC8" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></span>
+<span id="LC9" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[SFUD] Find a Winbond flash chip. Size is 16777216 bytes.</span>
+<span id="LC10" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[SFUD] nor_flash0 flash device is initialize success.</span>
+<span id="LC11" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] ==================== FAL partition table ====================</span>
+<span id="LC12" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] | name    | flash_dev    |   offset   |    length  |</span>
+<span id="LC13" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] -------------------------------------------------------------</span>
+<span id="LC14" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] | app     | onchip_flash | 0x00020000 | 0x000e0000 |</span>
+<span id="LC15" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] | fm_area | nor_flash0   | 0x00000000 | 0x00100000 |</span>
+<span id="LC16" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] | df_area | nor_flash0   | 0x00100000 | 0x00100000 |</span>
+<span id="LC17" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">[I/FAL] =============================================================</span>
+<span id="LC18" class="line" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin-bottom: 0px !important;">[I/FAL] RT-Thread Flash Abstraction Layer (V0.4.0) initialize success.</span></pre>
+				</div>
+			</div>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-注意事项" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>注意事项
+			</h2>
+			<ul style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px; padding-left: 0.6667rem;">
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0px 0px 0.2667rem;">
+					<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0px;">RT-FOTA 使用正点原子的探索者开发板，如果要运行到其他目标板，可能需要修改相关设置；
+					</p>
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px;">
+					<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0px;">代码中使用的硬件有 usart0、spi0、PE4(key0)、PF9（led0）；
+					</p>
+				</li>
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0.2667rem 0px 0px;">
+					<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0px;">由于业余时间开发，文档逐步完善，但只要有一定编程基础的朋友，开代码注释即可知道如果进行相关修改；
+					</p>
+				</li>
+			</ul>
+			<h2 style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 20px 0px 10px; padding: 0px; font-weight: 700; -webkit-font-smoothing: antialiased; cursor: text; position: relative; font-size: 19px; border-bottom: 1px solid rgb(204, 204, 204); color: rgb(0, 0, 0);"><a id="user-content-联系人信息" class="anchor" href="https://gitee.com/spunky_973/rt-fota#%E8%81%94%E7%B3%BB%E4%BA%BA%E4%BF%A1%E6%81%AF" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px !important; margin-bottom: 0px !important; display: block; padding-left: 25px; margin-left: -18px; cursor: pointer; position: absolute; top: 0px; left: 0px; bottom: 0px;"></a>联系人信息
+			</h2>
+			<p style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 0.2667rem 0px;">维护人: 王希
+			</p>
+			<ul style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin-top: 0.2667rem; margin-right: 0px; margin-bottom: 0px !important; margin-left: 0px; padding-left: 0.6667rem;">
+				<li style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); list-style: disc; margin: 0px;"><a href="https://gitee.com/spunky_973/rt-fota" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-top: 0px;">GitHub</a>, 邮箱：<a href="mailto:7859177@qq.com" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); background-color: transparent; text-decoration: none; color: rgb(65, 131, 196); margin-bottom: 0px;">7859177@qq.com</a>
+				</li>
+			</ul>
+		</div>
+		<div><br />
+		</div>
+		<div><header class="gitee-nav" style="box-sizing: border-box; outline-width: 0px; outline-style: initial; outline-color: initial; position: fixed; top: 0px; left: 0px; width: 951.5px; z-index: 100; -webkit-box-pack: justify; height: 1.17333rem; padding-top: 0px; padding-right: 0.426667rem; padding-bottom: 0px; padding-left: 0.426667rem; -webkit-box-align: center; font-family: 'Helvetica Neue', Tahoma, Arial, PingFangSC-Regular, 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif; font-style: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; ">
+			<div class="left-side item side-slide-btn" style="color: rgb(255, 255, 255); font-size: 12px; white-space: normal; box-sizing: border-box; outline-width: 0px; outline-style: initial; outline-color: initial; height: 1.0667rem; line-height: 1; -webkit-box-align: center; "><em class="iconfont icon-mode-table" style="box-sizing: border-box; outline: 0px; text-size-adjust: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-size: 0.4rem; font-style: normal; -webkit-font-smoothing: antialiased; font-family: iconfont !important; color: rgb(255, 255, 255);"></em>
+			</div>
+			<div class="center item nav-title" style="color: rgb(255, 255, 255); font-size: 12px; white-space: normal; box-sizing: border-box; outline-width: 0px; outline-style: initial; outline-color: initial; height: 1.0667rem; line-height: 1; -webkit-box-align: center; min-width: 0px; -webkit-box-pack: center; overflow-x: hidden; overflow-y: hidden; "><br />
+			</div>
+			<div class="center item nav-title" style="box-sizing: border-box; outline-width: 0px; outline-style: initial; outline-color: initial; height: 1.0667rem; -webkit-box-align: center; min-width: 0px; -webkit-box-pack: center; overflow-x: hidden; overflow-y: hidden; "><span style="color: #dce3e8"><span style="font-size: 14px; line-height: 18px; white-space: nowrap;"><br /></span></span>
+			</div></header>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

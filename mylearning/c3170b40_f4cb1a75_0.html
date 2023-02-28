@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(十二)：网络音箱之声卡驱动
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-06-11 23:26
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：对于大多数年轻的女性来说，她们最关心的是生活和自己的男人。男人应该更多的关系自己身边的女人，尤其是IT男们，不要因为只顾自娱自乐的这种自私而忽略了身边人。为什么不为你的女朋友准备一台网络音箱？在她繁忙工作下班回来，可以一边开心的听音乐一边给你烧菜呢？从这章开始我
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;"><span style="line-height: 1.5em;">题记：忽闻水上琵琶声，主人忘归客不发。转轴拨弦三两声，未成曲调先有情。</span></strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">对于大多数年轻的女性来说，她们最关心的是生活和自己的男人。男人应该更多的关系自己身边的女人，人生是苦比乐多的，因此要乐观的面对自己好好的对家人。尤其是IT男们，不要因为只顾自娱自乐的这种自私而忽略了身边人。为什么不为你的女朋友准备一台网络音箱？在她繁忙工作下班回来，可以一边开心的听音乐一边给你烧菜呢？
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">从这章开始我们将花费一些时间介绍下使用路由器实现网络音箱的功能，这些功能都有一个特点&quot;只需要软件包修改和配置&quot;，在不需要接触嵌入式编程的情况下即可实现。&quot;网络音箱&quot;一共有四章，其中包括安卓播放器，苹果播放器，DLNA媒体播放器。</span>
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">与此相关的存储和电流
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这章我们要介绍关于播放了，请调整好你的存储器，如果你只使用系统内部的FLASH作为存储器，那么作为媒体设备显然容量就太小了，所以建议开始启用外部存储器。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">电流方面，我们采用的是USB外置设备方式实现的播放，这种情况下对电流要求会增大。在M150的开发板上，如果你接入了外置硬盘那一定要给硬盘提供独立的供电。否则建议使用TF卡。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">存储与播放的关系：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">存储器类型 优势 缺点 补救<br />内部SPI FLASH 不用外接设备 容量不够 接个设备<br />TF卡 供电要求低 写速度慢 凑合能用也可以<br />USB硬盘 写速度快 供电不足 外接电源
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">播放实现原理
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在M150上实现播放音乐主要依靠这么几点实现的：
+							</p>
+							<ol style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">具备USB总线，可以驱动我们x86电脑常用的声卡。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">一大部分普通声卡在Linux下都支持ALSA和OSS两个驱动框架，可以不用自己编译驱动，只需要在内核里启用即可。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">OpenWRT下具备了一大批关于音乐播放的软件库，即使本文也只介绍了其中一小部分而已。
+								</li>
+							</ol>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">声卡驱动产生/dev/下的设备，而播放软件将MP3音乐文件转换成为PCM码流送入驱动，驱动处理后导入声卡芯片中实现音乐播放。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">选择声卡和音箱
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">跟设备首先连接的是声卡，支持标准驱动的声卡芯片非常繁多，而且有很多价格也很便宜。但是在购买的时候很难知道是否支持标准驱动，而卖声卡的也不知道什么芯片的他们也不懂，所以讲芯片没有用，所以hoowa给大家一个这么建议如何选择到可以用的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">而如果你的房间不大，或是并不追求HIFI音质，那么而市面上还有很多带声卡的音箱，便宜的10几块钱，好一点的要100左右也是可以选择的，不过要注意这些音箱的供电问题啊。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果你是现场购买，那么将你的M150开发板带过去测试一下，这个是最靠谱的；如果你是在淘宝上购买的，那么就问下卖家声卡是否支持“Windows XP即插即用无需驱动”。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">所以, 选择一个合适的声卡其实挺重要的。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">安装声卡驱动
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">现在我们开始具体操作了，确保你的开发板连接外网正常。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第一步：首先安装驱动和软件包</strong>
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# opkg update<br />root@SmartRouter:/# opkg install kmod-usb-audio<br />root@SmartRouter:/# opkg install alsa-utils
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第二步：插入声卡。</strong>因为在工作状态下插入你的声卡如果供电有问题会导致USB HUB重启，这个时候可能外置磁盘就异常系统崩溃了。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">关闭掉设备电源<br />插入声卡设备<br />再开启电源
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第三步：测试声卡是否识别并且驱动</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在没有插入任何外置USB设备的时候，lsusb看起来是这样：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# lsusb<br />Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub<br />Bus 001 Device 004: ID 058f:6254 Alcor Micro Corp. USB Hub<br />Bus 001 Device 005: ID 058f:6366 Alcor Micro Corp. Multi Flash Reader
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">当插入USB设备的时候，会多出来一个设备，hoowa的这个声卡看起来是这样：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# lsusb<br />Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub<br />Bus 001 Device 004: ID 058f:6254 Alcor Micro Corp. USB Hub<br />Bus 001 Device 005: ID 058f:6366 Alcor Micro Corp. Multi Flash Reader<br />Bus 001 Device 006: ID 19a8:2036 Biforst Technology Inc.
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">查看声卡的设备驱动符号是否创建，这个标准用来识别声卡是否被驱动：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# ls /dev/dsp<br />root@SmartRouter:/# ls /dev/audio<br />root@SmartRouter:/# ls /dev/mixer
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果以上信息都正确，那么恭喜你安装声卡成功了。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第四步：设置音量</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">默认音量比较大，可能首次播放会吓到我们。写个默认音量程序吧。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">使用vi编辑器编辑/etc/rc.local文件。在exit 0的前面增加这句：amixer set PCM 35%
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">修改后的rc.local文件内容如下：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/06/244.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;"><strong style="font-style: normal; font-weight: bold;">第五步：重启。</strong>设置全都完毕了现在要重启下让第四步的配置生效。</span>
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# reboot
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">测试播放音乐
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第一步：</strong>安装一个madplay作为测试播放器
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# update<br />root@SmartRouter:/# opkg install madplay
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第二步：</strong>复制一个MP3过来
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">将你电脑里一个mp3文件更名为test.mp3并且复制到/mnt/extdisk下面。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">第三步：</strong>测试播放
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# madplay /mnt/extdisk/test.mp3
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果听到音乐说明测试成功，这个时候通过键盘组合键ctrl+c停止测试。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">#测试播放<br />mkdir -p /mnt/extdisk/music<br />chmod -R 777 /mnt/extdisk/music<br />root@SmartRouter:/# amixer set PCM 35%
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">复制以个音乐文件到music下：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# madplay /mnt/extdisk/music/*.mp3
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果音箱能听到音乐说明测试成功，退出按键盘组合键Ctrl+c停止播放
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">章节结尾
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">到这里，声卡和驱动我们就完成了，并且已经测试成功了，下一章我们将介绍使用安卓系统下的一款MPDroid软件实现手机控制播放。到这里，大家还可以自己玩玩，用命令行播放下音乐看看。
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

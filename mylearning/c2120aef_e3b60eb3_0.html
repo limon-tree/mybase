@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div><a href="file:///D:/public-Info/note_guojc/openwrt/%E8%B7%9Fhoowa%E5%AD%A6%E5%81%9A%E6%99%BA%E8%83%BD%E8%B7%AF%E7%94%B1_%E5%8D%81_%EF%BC%9A%E6%89%A9%E5%85%85RAM%E5%92%8CFLASH.pdf">file:///D:/public-Info/note_guojc/openwrt/%E8%B7%9Fhoowa%E5%AD%A6%E5%81%9A%E6%99%BA%E8%83%BD%E8%B7%AF%E7%94%B1_%E5%8D%81_%EF%BC%9A%E6%89%A9%E5%85%85RAM%E5%92%8CFLASH.pdf</a>
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div>1 fdisk -l 分区
+		</div>
+		<div>
+			<div>输入p指令查看当前磁盘分区情况：
+			</div>
+			<div>输入d指令删除掉旧分区(如果你有多个分区删除程序会让你输入删除哪一个范围是1到4，如果只有一个会默认删除掉)：
+			</div>
+			<div>一直删除到没有分区为止：
+			</div>
+			<div>输入n指令创建分区：
+			</div>
+			<div>输入p创建主&quot;分区1&quot;：
+			</div>
+			<div><br />
+			</div>
+		</div>
+		<div>mkfs.ext4 /dev/sdb1
+		</div>
+		<div>mount /dev/sdb1 /mnt/sdb1
+		</div>
+		<div><br />
+		</div>
+		<div>2 格式化，挂载
+		</div>
+		<div>mkfs.ext4 /dev/sdb1
+		</div>
+		<div>mount -o rw /dev/sdb1 /opt/
+		</div>
+		<div><br />
+		</div>
+		<div>
+			<div>
+				<pre>
+<code id="ID_17D51155C03" class="hljs jboss-cli">root@OpenWrt:/<span class="hljs-comment"># df -h</span>
+Filesystem                Size      Used Available Use% Mounted on
+<span class="hljs-string">/dev/root</span>                27.3M    27.3M        0 100% <span class="hljs-string">/rom</span>
+tmpfs                  120.1M      1.3M    118.8M  1% <span class="hljs-string">/tmp</span>
+<span class="hljs-string">/dev/loop0</span>              130.9M    125.3M      5.6M  96% <span class="hljs-string">/overlay</span>
+overlayfs:<span class="hljs-string">/overlay</span>      130.9M    125.3M      5.6M  96% /
+<span class="hljs-string">/dev/sda1</span>                15.7M      5.0M    10.5M  32% <span class="hljs-string">/boot</span>
+<span class="hljs-string">/dev/sda1</span>                15.7M      5.0M    10.5M  32% <span class="hljs-string">/boot</span>
+tmpfs                  512.0K        0    512.0K  0% <span class="hljs-string">/dev</span>
+<span class="hljs-string">/dev/sdb1</span>                7.8G    36.0M      7.4G  0% <span class="hljs-string">/opt</span></code></pre>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

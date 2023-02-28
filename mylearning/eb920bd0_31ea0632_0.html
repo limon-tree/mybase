@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div><br />
+		</div>
+		<div>
+			<pre>
+<code id="ID_17E763390F6" class="lang-cpp hljs">
+<span class="hljs-comment">/* Execute command in child process. */</span>
+<span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span>
+<span class="hljs-title">execute_command</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *command, <span class="hljs-keyword">int</span> argc, <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *arg1,
+                <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *arg2)</span>
+</span>{
+    <span class="hljs-keyword">pid_t</span> pid;
+    <span class="hljs-keyword">int</span> status;
+
+    <span class="hljs-comment">/* Call fork(). */</span>
+    pid = fork();
+
+    <span class="hljs-keyword">if</span> (pid &lt; <span class="hljs-number">0</span>)
+    {
+        <span class="hljs-comment">/* Failure of fork(). */</span>
+        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">"Can't fork: %s\n"</span>, safe_strerror(errno));
+        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);
+    }
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (pid == <span class="hljs-number">0</span>)
+    {
+        <span class="hljs-comment">/* This is child process. */</span>
+        <span class="hljs-keyword">switch</span> (argc)
+        {
+        <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:
+            execlp(command, command, (<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *)<span class="hljs-literal">NULL</span>);
+            <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:
+            execlp(command, command, arg1, (<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *)<span class="hljs-literal">NULL</span>);
+            <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:
+            execlp(command, command, arg1, arg2, (<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *)<span class="hljs-literal">NULL</span>);
+            <span class="hljs-keyword">break</span>;
+        }
+
+        <span class="hljs-comment">/* When execlp suceed, this part is not executed. */</span>
+        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">"Can't execute %s: %s\n"</span>, command, safe_strerror(errno));
+        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);
+    }
+    <span class="hljs-keyword">else</span>
+    {
+        <span class="hljs-comment">/* This is parent. */</span>
+        execute_flag = <span class="hljs-number">1</span>;
+        wait4(pid, &amp;status, <span class="hljs-number">0</span>, <span class="hljs-literal">NULL</span>);
+        execute_flag = <span class="hljs-number">0</span>;
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+</code></pre>
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

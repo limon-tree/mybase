@@ -1,0 +1,388 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(十一)：实现网络存储与文件共享
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-05-31 08:50
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：本章将介绍使用Samba实现Windows网上邻居以及使用FTP两种方式进行文件共享，这样你就可以把经常使用和需要交换的文件存放于你的智能路由存储器里了。
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本章将介绍使用Samba实现Windows网上邻居以及使用FTP两种方式进行文件共享，这样你就可以把经常使用和需要交换的文件存放于你的智能路由存储器里了。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">文件共享和传输的协议有很多种，但是hoowa为了让大家使用最常用的，hoowa选择了介绍Windows文件共享服务器和FTP文件传输服务器的实现方法。Windows文件共享服务器更适合局域网内部进行文件共享管理，简单方便容易。FTP文件服务器适合局域网及公网远程文件共享服务。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">选择存储器
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">还记得我们之前讲解过如何加载外部存储器吗？ 那么，如果你使用的是32G的TF卡又或者使用的是另外一块外置硬盘，也是可以顺利完成整个操作的。毕竟如果数据比较多使用一个外置硬盘是更适合的选择。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">另外，各位也可以上网选购那些大容量存储设备，比如USB接口的磁盘阵列，实现中小企业的大容量存储。很划算的！
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">加载第二块USB外置磁盘
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">本节非必学，可以跳过！！！</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">只有需要加载第二块或更多的外置磁盘时才需要阅读本节。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在这里hoowa是使用他的U盘做演示的，如果你的/overlay挂载的外部存储器容量不够，就参考本节。这里hoowa采用EXT4文件系统(也可选择速度更快的EXT3文件系统，不过稳定性EXT4高一些)。<br />但是本文全部文章都不推荐选择NTFS文件系统，不是别的原因主要是因为没有经过优化在OpenWRT中性能很低且CPU占用高。而大文件操作FAT32又不支持，所以就EXT系列了。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第一步：插入第二块硬盘，并且查找设备符号
+							</h3>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# fdisk -l
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/644.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">&nbsp;
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这个/dev/sdc1的容量是4G正好是hoowa的那个U盘。记住之前章节讲的看你自己的设备符号是什么，不能直接抄啊。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第二步：分区格式化
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">以前都学过，这里就不废话了。如果记不住，翻翻&quot;<a href="http://www.leiphone.com/diy-a-smart-router-topic-increase-memory-3.html" target="_blank" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;">扩充RAM和FLASH</a>&quot;再学习下。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">开始分区</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/3114.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">进入Command模式：<span style="line-height: 1.5em;">Command (m for help)</span>
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">p：查看当前磁盘状况<br />d：删除分区<br />n：新建分区<br />w：提交分区修改
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;"><span style="line-height: 1.5em;">开始格式化</span></strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/564.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;"><strong style="font-style: normal; font-weight: bold;">第三步：设置自动挂载第二块外置硬盘</strong>
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在这里因为我们已经使用了FLASH可写分区挂载了第一块外置磁盘，为了简化操作流程难度。我们就直接修改当前系统下的/etc/config/fstab即可。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">取得外置磁盘的UUID编号(当前hoowa的是/dev/sdb1分区)：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/1249.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">&nbsp;
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">因为我们的盘是/dev/sdc1，所以UUID就是&quot;61f4d556-c4c2-4603-bd72-7174a6782787&quot;了。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">修改当前系统下的fstab配置，使用VI或UCI修改fstab配置文件(以下UCI举例)：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# uci add fstab mount<br /><span style="color: rgb(255, 0, 0);">cfg084d78</span>
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">上面这个cfg044d78是hoowa这台机器在创建mount时候产生的唯一值，因为mount是属于匿名段(还记得之前章节里介绍过UCI部分的匿名段吗)。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">也就是说后续的增加参数操作使用这个cfg084d78代表当前mount操作就行，请注意啊各位，这个cfg开头的名字在每台机器上都不一样各位不要直接抄这部分的指令啊，要变通修改为自己的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">UUID填写刚才blkid取到的那个UUID，其他参数参考了&quot;<a href="http://www.leiphone.com/diy-a-smart-router-topic-increase-memory-3.html" target="_blank" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;">扩充RAM和FLASH</a>&quot;那章的写法：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# uci set fstab.cfg084d78.uuid=62d9ed48-02b2-47ea-a4f5-8e1adfc18b1e<br />root@SmartRouter:/# uci set fstab.cfg084d78.target=/mnt/extdisk<br />root@SmartRouter:/# uci set fstab.cfg084d78.fstype=ext4<br />root@SmartRouter:/# uci set fstab.cfg084d78.options=rw,sync<br />root@SmartRouter:/# uci set fstab.cfg084d78.enable=1<br />root@SmartRouter:/# uci set fstab.cfg084d78.enabled_fsck=0<br />root@SmartRouter:/# uci commit fstab
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">创建挂载点的文件夹：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# mkdir -p /mnt/extdisk
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">查看是否成功：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/2142.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">&nbsp;
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">重新启动,确认挂载成功(重启后因为磁盘比较多所以挂载时间稍长)：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# reboot<br />……<br /><a href="http://static.leiphone.com/uploads/2014/05/3116.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">&nbsp;
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">大家有看到吗？这里的挂载extdisk已经成功了，但是磁盘符号变成/dev/sdb2了.但是有UUID，所以没关系。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这就是因为内核启动的顺序发生变化。但是由于我们采用了uuid的挂载方法，所以设备符号不论怎么变化都能找到你要的那个磁盘和分区。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">没有使用第二块外置磁盘的准备工作
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果你一个硬盘就够了，那么就按照本节操作下，创建一个/mnt/extdisk文件夹即可。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">创建必要的文件夹：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# mkdir -p /mnt/extdisk
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">最好给文件夹设置权限为777，保证任何进程都具备写能力：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# chmod 777 /mnt/extdisk/
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">安装Windows文件共享
+							</h2>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第一步: 安装samba-server服务包
+							</h3>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/home# opkg update<br />root@SmartRouter:/home# opkg install samba36-server
+								</p>
+							</blockquote>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第二步: 设置samba的配置信息
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">/etc/config/samba配置结构：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">#samba主配置<br />config &apos;samba&apos;<br />......<br />#samba文件共享配置<br />config &apos;sambashare&apos;<br />......
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">/etc/config/samba的config &apos;samba&apos;段 可选参数：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />charset 字符串 否 文件名编码类型，可选参数: UTF-8, cp936<br />name 字符串 是 服务器的名称，随意填写英文字符<br />workgroup 字符串 是 工作组，默认应为: WORKGROUP<br />description 字符串 否 该服务器的描述信息，随意填写英文字符<br />homes 数值 是 是否共享用户文件夹，默认为0，可选参数: 0 否， 1 是
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">/etc/config/samba的config &apos;sambashare&apos;段 可选参数：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />name 字符串 是 共享的名称<br />path 字符串 是 共享的文件路径<br />users 字符串 否 如果包含这个参数将允许特定访客访问，比如: &apos;hoowa,jimmy&apos;<br />read_only 字符串 是 是否只读共享，可选参数: yes/no<br />guest_ok 字符串 否 指定是否支持访客模式<br />create_mask 数值 否 设置被创建文件的权限, 默认为: 0744<br />dir_mask 数值 否 设置被创建的文件夹的权限，默认为: 0755
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">简单设置windows共享模式的配置举例(使用VI或UCI编辑)：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/4102.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">&nbsp;
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第二步: 设置启动windows共享
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果要开机每次都启动需要如下设置：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/etc/config# /etc/init.d/samba enable
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果要当前马上打开samba支持：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/etc/config# /etc/init.d/samba start
+								</p>
+							</blockquote>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第三步: 用你的系统连接
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">你的电脑一定要直接连接你的开发板，通过WiFi或通过LAN连接，因为Windows文件共享在Wan口上是被防火墙封闭的，这也是为了安全性考虑。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">开始---&gt;运行---&gt;输入智能路由的文件共享访问地址&quot;\\192.168.1.1\shares\&quot;
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/11-a.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">&nbsp;
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">点击确认后将弹出文件夹</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/11-b.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这个时候你可以像操作本地硬盘一样对这个网络磁盘进行文件操作。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果查看你的网上邻居你会发现（如下图）：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/11-c.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第三步: 设置带账户管理的windows共享
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">可能有的朋友问了，那怎么实现复杂的根据帐号管理啊？哎呀，兄弟们那太复杂了，在家里用，在小公司用弄那么多帐号麻烦不麻烦。<br />如果大家真的想设置，我也不拦着，大家可以查看标准linux的samba配置。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这里hoowa跟大家讲下openwrt特别的地方,在openwrt下samba的配置是：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">/etc/config/samba<br />/etc/samba/smb.conf.template
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">而服务启动时候的配置是/var/etc/smb.conf 这个文件是通过以上两个文件在服务启动时动态生成的。因此，修改上面任何一个文件的修改都要通过重启服务生效：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# /etc/init.d/samba restart
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果需要设置帐号和密码可以使用smbpasswd -a 增加用户，使用smbpasswd -x 删除用户。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">关于带账户的部分就讲这么多了，也算给大家一个例题，看看你能不能搞定咯。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">安装FTP文件服务器
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">有时候，可能你需要远程共享服务，因此使用ftp是最简易的方式。并且它也支持本地和网络。在这里我们使用Pure-FTPD，它是一个快速、高效、轻便、安全的FTP服务器，非常适合在OpenWRT下使用。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第一步：安装pure-ftpd软件包
+							</h3>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# opkg update<br />root@SmartRouter:/# opkg install pure-ftpd
+								</p>
+							</blockquote>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第二步: 设置Pure-FTPD配置信息
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">/etc/config/pure-ftpd配置结构：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config pure-ftpd<br />......
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">/etc/config/pure-ftpd的config &apos;pure-ftpd&apos;段 可选参数：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />port 数值 是 FTP服务器的端口，默认为21，值范围在: 10-65535<br />noanonymous 数值 是 禁止匿名访问，可选参数：0 不禁止， 1禁止<br />chrooteveryone 数值 否 是否允许FTP使用者访问整个服务器，可选参数：0 不允许， 1允许<br />maxclientsperip 数值 否 同一IP最大允许客户端数量，默认为: 10<br />maxclientsnumber 数值 否 最大允许客户端数量，默认为: 4<br />peruserlimits 字符串 否 单一用户最大量限制，格式为: &quot;单一用户:单一匿名用户&quot;，默认为: 3:4<br />umask 字符串 否 设置创建文件和文件夹的权限，格式为: &quot;文件:文件夹&quot;，默认为: 133:022，如果填写 000:000 表示完整权限<br />authentication 字符串 是 有效账户验证类型，设置为puredb:/etc/pureftpd.pdb 表示采用独立账户验证<br />enabled 字符串 是 是否启动pure-ftpd，可选参数：0 不启动， 1 启动<br />fortunesfile 字符串 否 欢迎词文件，默认可以不填<br />dontresolve 数值 否 不进行解析处理，可以提高速度，可选参数: 0 不禁止， 1禁止<br />passiveportrange 字符串 否 被动模式的端口范围，格式为: &quot;开始:结束&quot;，数据范围为: 10-65535
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">开启Pure-ftpd服务并且关闭匿名访问，同时限制用户离开自己的主目录：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/565.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">&nbsp;
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第三步: 创建Pure-FTPD的验证和用户体系
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在上一步我们制定了验证用的账户文件为/etc/pureftpd.pdb，这个文件是由pure-pw指令生成的。可以通过该程序产生ftp账户，并且对应到一个系统账户上。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">增加FTP新账户: pure-pw useradd [账户名称] -u [对应系统账户] -d [FTP服务器文件路径]<br />删除FTP账户: pure-pw userdel [账户名称]<br />修改FTP账户密码: pure-pw passwd [账户名称]<br />列表全部FTP账户: pure-pw list<br />生效数据: pure-pw mkdb
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在这里创建一个账户hoowa 并且设置系统账户为nobody这样跟Samba就一致了，同时设置路径为/mnt/extdisk。创建过程中要输入两次该账户的密码：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/etc# pure-pw useradd hoowa -u nobody -d /mnt/extdisk/<br />Password:<br />Enter it again:
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">生效数据：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/etc# pure-pw mkdb
+								</p>
+							</blockquote>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第四步: 启动服务
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果要开机每次都启动需要如下设置:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/etc/config# /etc/init.d/pure-ftpd enable
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果要当前马上启动pure-ftpd服务:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/etc/config# /etc/init.d/pure-ftpd start
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果修改了配置文件，所有FTP客户端都要重新连接所做修改才生效
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">穿越防火墙向外网开放FTP
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果你不需要外网访问FTP可以跳过这一节。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">默认情况在防火墙中下WAN口是不能对外开放FTP服务的。如果要允许WAN口直接访问系统的FTP服务，需要设置路由规则。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在以上配置中FTP我们使用了21号端口，另外被动模式(目前使用最广泛的FTP传输模式)使用了50000到51000范围的端口，因此我们都要在防火墙规则上允许WAN口的访问进入。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">通过UCI设置新的路由规则:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# uci add firewall rule<br />cfg1992bd
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">记录下来cfg1992bd那个值他代表当前的rule，请注意啊各位，这个cfg开头的名字在每台机器上都不一样各位不要直接抄这部分的指令啊，要变通修改为自己的啊:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# uci set firewall.cfg1992bd.name=&apos;wan-ftp&apos;<br />root@SmartRouter:/# uci set firewall.cfg1992bd.src=&apos;wan&apos;<br />root@SmartRouter:/# uci set firewall.cfg1992bd.dest_port=&apos;21 50000-51000&apos;<br />root@SmartRouter:/# uci set firewall.cfg1992bd.target=&apos;ACCEPT&apos;<br />root@SmartRouter:/# uci set firewall.cfg1992bd.proto=&apos;tcp&apos;<br />root@SmartRouter:/# uci commit firewall
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">重新读取防火墙配置:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# /etc/init.d/firewall reload
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">使用WinSCP连接FTP服务器
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">WinSCP是一个强大的客户端软件，他支持SFTP,FTP,SCP三种模式，这里我们就使用他的FTP功能进行测试连接。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第一步: 创建连接
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在你的电脑上打开WinSCP软件，点击新建。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/11-d.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">输入主机名，用户名，密码，文件协议选择FTP。点击登入既可登入系统。主机名如果是wifi或lan连接到开发板上，那么一般填写开发板的lan ip就行，如果你在之前的章节没有修改过lan ip他就应该是192.168.1.1。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/11-e.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如不出意外现在你可以通过FTP上载和下载文件，并且可以跟samba一起工作了。如果公司或则家庭内部就直接用samba，如果是手机，或是远程连接就使用ftp就可以了。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">用过的磁盘相关指令汇总
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在文章最后，我们简单的回顾一下我们使用过的磁盘相关指令。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">系统支持的格式化文件系统类型指令：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# mkfs.ext2 格式化EXT2文件系统<br />root@SmartRouter:/# mkfs.ext3 格式化EXT3文件系统<br />root@SmartRouter:/# mkfs.ext4 格式化EXT4文件系统
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">查看外置USB设备指令：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# lsusb
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">查看当前已经加载磁盘的情况:<br />root@SmartRouter:/# df
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">查看当前加载了什么东西：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# mount
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">查看当前系统的所有存储设备分区情况：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# fdisk -l
+								</p>
+							</blockquote>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

@@ -1,0 +1,1150 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<h1 class="postTitle" style="color: rgb(0, 0, 0); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; margin: 10px 0px; padding: 0px; font-weight: bold; border-bottom: 1px solid rgb(221, 221, 221); font-size: 14px; font-family: verdana, Arial, Helvetica, sans-serif; background-color: rgb(255, 255, 255);"><a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/zhangbaoqiang/p/4792628.html" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(57, 154, 178);"><span style="margin: 0px; padding: 0px; vertical-align: middle;">OPKG命令执行过程分析</span></a>
+			</h1>
+			<div class="clear" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; margin: 0px; padding: 0px; clear: both; color: rgb(51, 51, 51); font-family: verdana, Arial, Helvetica, sans-serif; font-size: 13.3333px; background-color: rgb(255, 255, 255);">
+			</div>
+			<div class="postBody" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; margin: 0px; padding: 0px; font-size: 14px; line-height: 1.8; color: rgb(51, 51, 51); font-family: verdana, Arial, Helvetica, sans-serif; background-color: rgb(255, 255, 255);">
+				<div id="cnblogs_post_body" class="blogpost-body" style="margin: 0px 0px 20px; padding: 0px; word-break: break-word;">
+					<h2 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); line-height: 1.5; font-size: 21px;">一、简介
+					</h2>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Opkg 是一个基于 ipkg 的轻量级的软件包管理系统，主要用于嵌入式系统，目前应用opkg的有Open WRT 和 Open Embedded。<sup style="margin: 0px; padding: 0px;">1</sup>
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;Opkg的详细使用方法可以参考Open WRT的 WIKI页面<sup style="margin: 0px; padding: 0px;">2</sup>，不再赘述，本文将重点解释opkg的工作原理。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;Opkg 的源代码可以在Google Code<span>&nbsp;</span><sup style="margin: 0px; padding: 0px;">3</sup>或Yocto Project<span>&nbsp;</span><sup style="margin: 0px; padding: 0px;">4</sup>上找到。Opkg的版本目前到了0.3.0<span>&nbsp;</span><sup style="margin: 0px; padding: 0px;">5</sup>，我使用的 Open WRT Barrier Breaker 14.07 系统上是0.1.8：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">cat</span> /etc/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">openwrt_release
+DISTRIB_ID</span>=<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">OpenWrt</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+DISTRIB_RELEASE</span>=<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14.07</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+DISTRIB_REVISION</span>=<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r42625</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+DISTRIB_CODENAME</span>=<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">barrier_breaker</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+DISTRIB_TARGET</span>=<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">x86/generic</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+DISTRIB_DESCRIPTION</span>=<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">OpenWrt Barrier Breaker 14.07</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+DISTRIB_TAINTS</span>=<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">""</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+root@OpenWrt:</span>~# opkg --<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">version
+opkg version </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.1</span>.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">8</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+root@OpenWrt:</span>~#</pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h2 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); line-height: 1.5; font-size: 21px;">二、命令执行详解
+					</h2>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">0. 加载基本配置
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">这是执行所有命令之前的准备工作。加载配置的函数是 opkg_conf_load(). Opkg 有一个命令行参数 -f / --conf 可以明确指定配置文件，如果没有指定，那么 Opkg 使用默认的配置文件。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">在 v0.1.8 版本上，Opkg 在args_parse() 函数解析完毕命令行参数后，如果没有 -f / --conf 参数，那么会默认使用 /etc/opkg.conf 作为配置文件：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">if</span>(!conf-&gt;conf_file &amp;&amp; !conf-&gt;<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">offline_root)
+    conf</span>-&gt;conf_file = xstrdup(<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">/etc/opkg.conf</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span>);</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">v0.3.0 的版本去掉了这个默认值。以下说明都是基于 v0.3.0 的代码，其他版本可以参考对应的代码，应该大同小异。查找配置文件的步骤：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; 使用命令行参数指定的配置文件，如果没有，转(2)；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; 使用命令行指定的 offline-root 路径下面的 *.conf，如果没有，转(3)；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(3)&nbsp;&nbsp;&nbsp;&nbsp; 如果设置了环境变量 OFFLINE_ROOT，使用该路径下面的 *.conf，如果没有，转(4)；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(4)&nbsp;&nbsp;&nbsp;&nbsp; 如果设置了环境变量 OPKG_CONF_DIR，使用该路径下面的 *.conf，如果没有，转(5)；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(5)&nbsp;&nbsp;&nbsp;&nbsp; 使用默认的OPKG_CONF_DEFAULT_CONF_FILE_DIR（宏，代码中默认为 /etc/opkg），使用该路径下面的 *.conf，如果该路径不存在，则无法解析任何配置文件。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">在准备过程中，配置文件是最重要的一个环节。除了配置文件，opkg 还需要初始化一些其他的变量（路径）：
+					</p>
+					<table border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 1px solid rgb(223, 223, 223); margin: 0px; padding: 0px; word-break: break-word;">
+						<tbody style="margin: 0px; padding: 0px;">
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">变量
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">默认值
+									</p>
+								</td>
+							</tr>
+							<tr style="background-color: rgb(248, 248, 248); margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Temp Directory
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">/tmp
+									</p>
+								</td>
+							</tr>
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Hash List
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+									</p>
+								</td>
+							</tr>
+							<tr style="background-color: rgb(248, 248, 248); margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Lists Directory
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">/var/lib/opkg/lists
+									</p>
+								</td>
+							</tr>
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Info Directory
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">/var/lib/opkg/info
+									</p>
+								</td>
+							</tr>
+							<tr style="background-color: rgb(248, 248, 248); margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Status File
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">/var/lib/opkg/status
+									</p>
+								</td>
+							</tr>
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Signature File
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+									</p>
+								</td>
+							</tr>
+							<tr style="background-color: rgb(248, 248, 248); margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Arch List
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">all, noarch, HOST_CPU_STR 
+									</p>
+								</td>
+							</tr>
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Dest List
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+									</p>
+								</td>
+							</tr>
+							<tr style="background-color: rgb(248, 248, 248); margin: 0px; padding: 0px;">
+								<td valign="top" width="151" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Cache Directory
+									</p>
+								</td>
+								<td valign="top" width="198" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">/var/cache/opkg
+									</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">注：HOST_CPU_STR为编译opkg时由configure指定的 --host 的值，可以在config.log 或者生成的 Makefile 中查看。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">以上变量都有各自重要的用处，在后面的说明中会逐一涉及。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">注：由于我是在 OpenWrt Barrier Breaker 14.07 上进行测试，所以在命令行上必须手动加上参数：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+-f /etc/opkg.conf</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">否则opkg无法找到配置文件（目前最新版的Chaos Calmer 15.05-rc3也是同样的情况）。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">解析完配置文件后，把配置文件中的 dest 指定的目录，加到 Dest List 中，例如：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+dest root /<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+dest ram </span>/tmp</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">然后，连接这个路径分别和以下几个路径连接：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; 和 Info Directory 连接作为该 dest 的 Info Directory;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; 和 Status File 连接作为该 dest 的 Status File;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(3)&nbsp;&nbsp;&nbsp;&nbsp; 和 Lists Directory 连接作为该 dest 的 Lists Directory。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">以 / 为例：
+					</p>
+					<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+						<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+//var/lib/opkg/info/
+//var/lib/opkg/lists/
+//var/lib/opkg/status</pre>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">对比v0.1.8，这些目录是放在了 /usr/lib/opkg 下面：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span> /usr/lib/opkg -<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">l
+drwxr</span>-xr-x    <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span> root     root          <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">8192</span> Oct  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span>  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">info</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+drwxr</span>-xr-x    <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span> root     root          <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">4096</span> Oct  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span>  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> lists
+</span>-rw-r--r--    <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span> root     root         <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">15932</span> Oct  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span>  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> status
+root@OpenWrt:</span>~#</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">其中，status 文件为所有软件包的基本信息，包括名称、版本、依赖、状态、初始安装日期等，以 libc 为例：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">Package: libc
+Version: </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.9</span>.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">33.2</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Depends: libgcc
+Status: </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">install</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> hold installed
+Essential: yes
+Architecture: x86
+Installed</span>-Time: <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1412176159</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Auto</span>-Installed: yes</pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Lists 文件夹下面是根据配置文件中的src/gz指定的URL下载下来的文件，例如：
+					</p>
+					<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+						<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+src/gz barrier_breaker_base http://downloads.openwrt.org/barrier_breaker/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14.07</span>/x86/generic/packages/base</pre>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">在执行 update 后，会使用下面的URL下载一个文件：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;"><a href="http://downloads.openwrt.org/barrier_breaker/14.07/x86/generic/packages/base/Packages.gz" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border-bottom: 1px dotted rgb(51, 51, 51);">http://downloads.openwrt.org/barrier_breaker/14.07/x86/generic/packages/base/Packages.gz</a>
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">文件下载后，将解压的文件放到 Lists 目录下面，并把第二个字段（如上面的barrier_breaker_base）作为文件名，这个文件里面包含了该Package里面所有的软件包的信息，举一为例：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">Package: 6in4
+Version: </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">17</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Depends: libc, kmod</span>-ipv6, kmod-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">sit
+Source: package</span>/network/ipv6/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">6in4
+Section: net
+Maintainer: Jo</span>-Philipp Wich &lt;xm@subsignal.org&gt;<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Architecture: all
+Installed</span>-Size: <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1194</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Filename: 6in4_17</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1_all.ipk
+Size: </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1832</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+MD5Sum: 6758bb49b2a828301bdac956481ec6c1
+SHA256sum: 1ad5794959c8435c7ab4c261ab86d2974d65527f7b8ffa99eee370409993976c
+Description:  Provides support for 6in4 tunnels in </span>/etc/config/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">network.
+ Refer to http:</span>//wiki.openwrt.org/doc/uci/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">network for
+ configuration details.</span></pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">查看 Lists 目录下的内容（压缩了一些空白符）：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span> /var/lib/opkg/lists/ -<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">l
+</span>-rw-r--r-- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span> root root  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">485307</span> Jul <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">18</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">44</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> barrier_breaker_base
+</span>-rw-r--r-- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span> root root   <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">43348</span> Jul <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">18</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">44</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> barrier_breaker_luci
+</span>-rw-r--r-- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span> root root    <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">4634</span> Jul <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">18</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">44</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> barrier_breaker_management
+</span>-rw-r--r-- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span> root root  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">715082</span> Jul <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">18</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">44</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> barrier_breaker_oldpackages
+</span>-rw-r--r-- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span> root root  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">455216</span> Jul <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">18</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">44</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> barrier_breaker_packages
+</span>-rw-r--r-- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span> root root   <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">34987</span> Jul <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">18</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">44</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> barrier_breaker_routing
+</span>-rw-r--r-- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span> root root  <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">260681</span> Jul <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">18</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">14</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">44</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> barrier_breaker_telephony
+root@OpenWrt:</span>~#</pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">0.1&nbsp;&nbsp;&nbsp; 配置文件的格式
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">配置文件中有下面
+					</p>
+					<table border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 1px solid rgb(223, 223, 223); margin: 0px; padding: 0px; word-break: break-word; width: 532px;">
+						<tbody style="margin: 0px; padding: 0px;">
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="88" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">类型(type)
+									</p>
+								</td>
+								<td valign="top" width="444" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">说明
+									</p>
+								</td>
+							</tr>
+							<tr style="background-color: rgb(248, 248, 248); margin: 0px; padding: 0px;">
+								<td valign="top" width="88" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">option
+									</p>
+								</td>
+								<td valign="top" width="444" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">配置某些参数，可供配置的参数可以在libopkg/opkg_conf.c里面的options[]数组中找到
+									</p>
+								</td>
+							</tr>
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="88" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">dist
+									</p>
+								</td>
+								<td valign="top" width="444" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">可供更新的发行版（存疑）
+									</p>
+								</td>
+							</tr>
+							<tr style="background-color: rgb(248, 248, 248); margin: 0px; padding: 0px;">
+								<td valign="top" width="88" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">dist/gz
+									</p>
+								</td>
+								<td valign="top" width="444" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">可供更新的发行版（存疑），gzip格式
+									</p>
+								</td>
+							</tr>
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="88" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">src
+									</p>
+								</td>
+								<td valign="top" width="444" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">可供更新的软件源
+									</p>
+								</td>
+							</tr>
+							<tr style="background-color: rgb(248, 248, 248); margin: 0px; padding: 0px;">
+								<td valign="top" width="88" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">src/gz
+									</p>
+								</td>
+								<td valign="top" width="444" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">可供更新的软件源，gzip格式
+									</p>
+								</td>
+							</tr>
+							<tr style="margin: 0px; padding: 0px;">
+								<td valign="top" width="88" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">dest
+									</p>
+								</td>
+								<td valign="top" width="444" style="border: 1px solid rgb(192, 192, 192); padding: 8px 14px; margin: 0px; border-collapse: collapse; min-width: 50px;">
+									<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">本地目标路径
+									</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 更新 update
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Opkg里用结构体 opkg_cmd 来表示一个命令，对应命令行的command参数。该结构体定义如下：
+					</p>
+					<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+						<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+						</div>
+						<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">struct</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> opkg_cmd {
+    </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">const</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">char</span> *<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">name;
+    </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> requires_args;
+    opkg_cmd_fun_t fun;
+    unsigned </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span> pfm;       <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">/*</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> package field mask </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">*/</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+};
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">typedef</span> </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">struct</span> opkg_cmd opkg_cmd_t;</pre>
+						<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">所有命令都保存在 libopkg/opkg_cmd.c 文件的 cmds[] 数组中，这里就不列出这个数组的值了。更新update使用的函数是opkg_update_cmd()，update后面无需参数。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">更新时执行的步骤：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; 检查 Lists 文件夹是否存在，如果不存在，则创建该文件夹；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; 创建临时目录 $tmp_dir/update-XXXXXX，其中 $tmp_dir 就是前面提到的 Temp Directory；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(3)&nbsp;&nbsp;&nbsp;&nbsp; 更新dist指定的软件包；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(4)&nbsp;&nbsp;&nbsp;&nbsp; 更新src指定的软件包；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(5)&nbsp;&nbsp;&nbsp;&nbsp; 删除(2)中创建的临时目录。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">下载过程是这样的：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; 构造下载地址：如果指定为gzip格式，那么用 $URL/Packages.gz 下载，否则用 $URL/Packages 下载；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; 对于gzip格式的文件，下载到 cache 目录下，文件名是把URL中的 / 替换为下划线 _ ，因此可以在 cache 目录看到如下内容：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span> /var/cache/opkg/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+http:__downloads.openwrt.org_barrier_breaker_14.07_x86_generic_packages_base_Packages.gz
+http:__downloads.openwrt.org_barrier_breaker_14.07_x86_generic_packages_luci_Packages.gz
+http:__downloads.openwrt.org_barrier_breaker_14.07_x86_generic_packages_management_Packages.gz
+http:__downloads.openwrt.org_barrier_breaker_14.07_x86_generic_packages_oldpackages_Packages.gz
+http:__downloads.openwrt.org_barrier_breaker_14.07_x86_generic_packages_packages_Packages.gz
+http:__downloads.openwrt.org_barrier_breaker_14.07_x86_generic_packages_routing_Packages.gz
+http:__downloads.openwrt.org_barrier_breaker_14.07_x86_generic_packages_telephony_Packages.gz
+root@OpenWrt:</span>~#</pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">下载完成后，解压到 lists 目录下，并命名为配置文件中设置的名字；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(3)&nbsp;&nbsp;&nbsp;&nbsp; 对于非gzip格式的文件，则直接下载到 lists 目录下面，并命名为配置文件中设置的名字。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 列出软件包 list/list-installed
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">列出软件包命令list和更新upgrade稍有不同，在开始执行命令之前的准备工作，会读取lists 目录下的文件，这个文件的格式前面提到了。将所有文件内的每个软件包的信息都加载到内存中， 在读取文件的过程中，opkg会分析每个软件包的Architecture 字段，只有当该字段的值在 Arch List 中时，才会将该软件包加到 hash table 里面（opkg_config-&gt;file_hash）。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">下面的事情就比较简单了，list 就是将 file_hash 里面所有的软件包打印出来。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">列出安装的软件包list-installed命令，并不会读取 lists 目录下的文件，而是读取 Status List 包含的每个文件，系统已安装的软件包会放到这个文件里面，然后将Status包含installed的软件包打印出来。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 查看软件包状态 status/info
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Status和info这两个命令使用同一个函数opkg_info_status_cmd()，这个函数的原型如下：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span> opkg_info_status_cmd(<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span> argc, <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">char</span> **argv, <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span> installed_only)</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">使用status命令时，第三个参数 installed_only 为1，只查找已安装的软件包；使用info命令时，installed_only为0，查找所有软件包：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">if</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> (installed_only)
+    pkg_hash_fetch_all_installed(available);
+</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">else</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+    pkg_hash_fetch_available(available);</span></pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">接下来就是在设定的范围内顺序查找，如果status/info 后面有参数，那么只打印与参数名匹配的软件包的状态，否则打印全部的状态。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">在这里发现opkg的一个微小的不足：当info/status后面跟的参数有多个，比如我想看 lua和 libc 两个软件包的信息，输入：
+					</p>
+					<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+						<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# opkg status lua libc</pre>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">只打印出lua的信息，没有libc的信息。这是因为opkg在查找时，如果有参数，那么只搜索第一个参数的软件包，后面的参数都被忽略了。读者有兴趣可以尝试做一个patch改进此问题。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 列出和搜索文件 files/search
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">files命令用于列出一个软件包所包含的全部文件，这些文件包括可执行文件、配置文件等。对于已安装过的软件包，则打开 $lists_dir 下面的软件包对应的 list 文件，例如软件包 busybox，对应的list文件为
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">/var/lib/opkg/info/busybox.list
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">这个文件包含了该软件包所包含的文件，每行一个。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">对于未安装的软件包，打印软件包尚未安装的错误信息：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+pkg = pkg_hash_fetch_installed_by_name(argv[<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">]);
+</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">if</span> (pkg ==<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> NULL) {
+    opkg_msg(ERROR, </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">Package %s not installed.\n</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span>, argv[<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">]);
+    </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">return</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">;
+}</span></pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Search 命令则用于查找某个文件属于哪个软件包，可以使用通配符（使用fnmatch函数来进行模式匹配）。对应的函数为 opkg_search_cmd()，这个过程也比较简单：获取全部安装的软件包，依次查找每个软件包所包含的文件，如果包含要查找的文件，那么就打印出该软件包。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">这个函数也有一些缺陷，如果一个软件包所包含的文件，有多个可以匹配搜索的文件，那么结果该软件包就会被打印多次。以搜索ls为例，在base-files中有以下7个文件包含ls字符串：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">cat</span> /var/lib/opkg/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">info</span>/base-files.list | <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">grep</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span>
+/etc/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">shel<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls
+</span></span>/etc/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">protoco<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls
+</span></span>/lib/preinit/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">10_indicate_fai<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span>afe
+</span>/etc/rc.button/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">fai<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span>afe
+</span>/lib/preinit/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">40_run_fai<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span>afe_hook
+</span>/lib/preinit/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">30_fai<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span>afe_wait
+</span>/lib/preinit/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">99_10_fai<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span>afe_login
+root@OpenWrt:</span>~#</pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">在使用
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# opkg search *<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span>*</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">的时候，base-files 就会被打印7次：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# opkg search *<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">ls</span>*<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+base</span>-files - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">156</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r42625
+base</span>-files - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">156</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r42625
+base</span>-files - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">156</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r42625
+base</span>-files - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">156</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r42625
+base</span>-files - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">156</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r42625
+base</span>-files - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">156</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r42625
+base</span>-files - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">156</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r42625
+busybox </span>- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1.22</span>.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+busybox </span>- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1.22</span>.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+fstools </span>- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">06</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">22</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">e0430f5c62f367e5a8e02755412977b02c3fc45e
+luci</span>-app-firewall - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-app-firewall - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-app-firewall - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-app-firewall - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-base - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-base - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-base - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-base - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-base - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+luci</span>-base - <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0.12</span>+svn-r10530-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+netifd </span>- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">09</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">08</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">46c569989f984226916fec28dd8ef152a664043e
+ubox </span>- <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">09</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">16</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">5c45b560bc8c9e13682269ed963a8a4a65959518
+root@OpenWrt:</span>~#</pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">其他文件不一一说明。读者可以尝试做一个patch，使得每个软件包最多打印一次。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">5.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 安装 install
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">安装 install 后面可以跟多种类型的参数：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; URL: opkg 尝试直接使用此URL下载一个软件包；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; Package: 软件包名称，opkg会获取该软件包的名称（Filename字段），构造下载地址，例如 base 软件包里面的 6in4 ，Filename 字段为6in4_17-1_all.ipk，base的src为<br style="margin: 0px; padding: 0px;" /><a href="http://downloads.openwrt.org/barrier_breaker/14.07/x86/generic/packages/base" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border-bottom: 1px dotted rgb(51, 51, 51);">http://downloads.openwrt.org/barrier_breaker/14.07/x86/generic/packages/base</a><br style="margin: 0px; padding: 0px;" />所以 6in4 的下载地址为<span>&nbsp;</span><br style="margin: 0px; padding: 0px;" /><a href="http://downloads.openwrt.org/barrier_breaker/14.07/x86/generic/packages/base/6in4_17-1_all.ipk" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border-bottom: 1px dotted rgb(51, 51, 51);">http://downloads.openwrt.org/barrier_breaker/14.07/x86/generic/packages/base/6in4_17-1_all.ipk</a>；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(3)&nbsp;&nbsp;&nbsp;&nbsp; File: opkg会把这个名字当作一个文件名，文件的格式必须如 Lists 目录下的文件，或者如 control 文件（/var/lib/opkg/info/*.control），opkg从中解析出所有软件包的信息，并进行下载。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(4)&nbsp;&nbsp;&nbsp;&nbsp; File: opkg会把这个名字作为一个准备好的软件包(ipk)文件，直接进行安装，并标记为手动。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">在进行实际的下载、安装动作之前，opkg 会做几件事：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;"><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">检查软件状态（是否安装）：在pkg_hash_load_feeds()<span>&nbsp;</span></span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">（也就是opkg_conf_load()</span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">之后，执行install command</span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">之前），Opkg</span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">会从Lists</span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">文件（/var/lib/opkg/lists</span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">目录下）获取所有软件包的信息，如果一个软件的名字有有多个软件库提供，则把所有提供该软件包的<span>&nbsp;</span></span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">软件库放到provided_by<span>&nbsp;</span></span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">中，在检查是否安装软件时，将检查每个provided_by</span><span style="margin: 0px; padding: 0px; line-height: 1.8; text-decoration: line-through;">，如果有任何一个已安装，那么就会认为该软件已安装；</span>
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; 检查是否已安装旧版本的软件包；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; 查找要安装的软件包信息，如果该软件包有多个软件库提供，那么pkg_hash_fetch_best_installation_candidate() 函数会选择一个最佳的匹配（最佳匹配的规则是，手动最高，然后按照architecture的优先级排序）；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(3)&nbsp;&nbsp;&nbsp;&nbsp; 检查旧、新软件包的版本：如果旧的版本较高，并且标记强制降级（命令行参数--force-downgrade），则不做任何事情；如果新旧版本一样，表示已安装位最新版本，不做任何事；否则进行升级（或者强制降级）。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">以上所有准备工作就绪，开始真正安装软件包，这个动作是在opkg_install_pkg() 函数中完成的，这个函数的原型如下：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span> opkg_install_pkg(pkg_t * pkg, <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span> from_upgrade)</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">第二个参数为是否升级，使用 install 命令时，即使有旧版本的软件，这个参数也为0；当使用 upgrade 命令时，该参数才为1. 这个标记有两个影响：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; 是否打印安装软件包时的信息：只有升级upgrade时打印；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; 如果已安装好最新版本的软件，或者没有强制降级，那么install会直接退出（无需做任何事情），而升级upgrade则强制把所有安装软件包的流程执行完（不明白意义在哪里？）。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">安装过程如下：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; 检查软件包冲突：冲突是通过lists文件内的Conflicts字段表示的；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; 检查磁盘剩余空间是否足够：软件包占用的空间通过lists文件内的Installed-Size字段指定，磁盘空间通过statvfs()函数获取；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(3)&nbsp;&nbsp;&nbsp;&nbsp; 检查签名文件： 当 check_signature为非0 时，才会检查签名文件，可以在配置文件中加入“check_signature”来设置；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(4)&nbsp;&nbsp;&nbsp;&nbsp; 下载软件包：如果为手动模式，则无需下载；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(5)&nbsp;&nbsp;&nbsp;&nbsp; 更新文件所有者：将该软件包含的全部文件的所有者设为该软件包，并加入到opkg_config-&gt;file_hash中；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(6)&nbsp;&nbsp;&nbsp;&nbsp; 检查依赖：可以通过opkg命令行参数--nodeps忽略检查；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(7)&nbsp;&nbsp;&nbsp;&nbsp; 如果存在旧软件包，更新新、旧软件依赖：如果旧软件的某个依赖，新的软件不再依赖，检查该依赖是否还有其他软件依赖，如果没有，则可以安全删除该依赖；如果新软件的某个依赖，旧的软件没有，那么需要安装新的依赖（有点绕）；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(8)&nbsp;&nbsp;&nbsp;&nbsp; 安装维护脚本：老式的ipk文件（*）是一个gz格式的压缩包，里面有3个文件：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+~ $ <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span> -tvf binutils_2.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">24</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2_x86.ipk
+</span>-rw-r--r-- bb/bb             <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">4</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">09</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">21</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">19</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">05</span> ./debian-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">binary
+</span>-rw-r--r-- bb/bb        <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">838861</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">09</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">21</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">19</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">05</span> ./data.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">.gz
+</span>-rw-r--r-- bb/bb           <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">359</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">09</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">21</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">19</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">05</span> ./control.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span>.gz</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">其中 control.tar.gz 里面包含一个control文件：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+~ $ <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span> -tvf control.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">.gz
+drwxr</span>-xr-x root/root         <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">09</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">21</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">19</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">05</span> ./
+-rw-r--r-- root/root       <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">298</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2014</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">09</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">21</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">19</span>:<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">05</span> ./control</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">这个文件就是维护脚本（maintainer script），解压出来查看其内容：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+~ $ <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span> xf control.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">.gz
+</span>~ $ <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">cat</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> control
+Package: binutils
+Version: </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2.24</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Depends: libc, objdump
+Source: package</span>/devel/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">binutils
+Section: devel
+Maintainer: Felix Fietkau </span>&lt;nbd@openwrt.org&gt;<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Architecture: x86
+Installed</span>-Size: <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">838861</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Description:  The Binutils package contains a linker, an assembler, and other tools </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">for</span> handling <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">object</span> files</pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>这个文件被解压到info_dir下面，并以“该软件包的名字 . control”的方式命名。
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">除了control文件，有些软件包还包含配置文件，这个配置文件是交给UCI来管理的，其格式同UCI配置文件的格式，如果有配置文件，那么在control.tar.gz里面还会包含一个文件conffiles，比如以transmission-daemon为例，这个软件的control.tar.gz压缩包内有两个文件：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+~ $ <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span> xvf control.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">tar</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">.gz
+.</span>/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+.</span>/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">control
+.</span>/conffiles</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">Conffiles这个文件里面包含了该软件所包含的配置文件，transmission-daemon只有一个配置文件，conffiles内容如下：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+~ $ <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">cat</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> conffiles
+</span>/etc/config/transmission</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">在软件安装完成后，会根据这个配置文件进行某些设置。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">注：这里使用了一个词“老式的ipk文件”，在v0.3.0版本的opkg上，软件包的格式是ar，并且不再支持gz格式，由于暂时找不到新式的软件包，所以暂时无法使用新的opkg安装老式的ipk软件。（非常郁闷！！）而v0.1.8版本的代码上支持两种格式，在libbb/unarchive.c的deb_extract()函数中：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">char</span> *<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+deb_extract(</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">const</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">char</span> *package_filename, FILE *<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">out_stream,
+    </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">const</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span> extract_function, <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">const</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">char</span> *<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">prefix,
+    </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">const</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">char</span> *filename, <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">int</span> *<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">err)
+{
+    </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">if</span> (strncmp(ar_magic,<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">!&lt;arch&gt;</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span>,<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">7</span>) == <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">) {
+    ... </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">//</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> 对 ar 格式文件的处理</span>
+    } <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">else</span> <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">if</span> (strncmp(ar_magic, <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">\037\213</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span>, <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span>) == <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">0</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">) {
+    ... </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">//</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> 对 gz 格式文件的处理</span>
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">    }
+    ...
+}</span></pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>所以，为了使opkg暂时支持老式的ipkg，只能对代码做些修改，找到libopkg/opkg_archive.c里面的open_outer()函数，在调用archive_read_support_format_ar()之前，加上这样一段代码：
+					</div>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+r =<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> archive_read_support_filter_gzip(outer);
+</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">if</span> (r !=<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> ARCHIVE_OK) {
+    opkg_msg(ERROR, </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">GZ filter not supported: %s\n</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">"</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">,
+             archive_error_string(outer));
+    </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">goto</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> err_cleanup;
+}</span></pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>然后将调用archive_read_support_format_ar()改为调用archive_read_support_format_tar()函数：
+					</div>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">//</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">r = archive_read_support_format_ar(outer);</span>
+r = archive_read_support_format_tar(outer);</pre>
+						</div>完整的diff如下：
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">重新编译opkg之后放到虚拟机里面运行，以安装 libpolarssl （这个软件包依赖较少，是个可供选择的测试软件）为例：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">首先查看libpolarssl的状态，确保没有安装：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# ./opkg <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">info</span> libpolarssl -f /etc/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">opkg.conf
+Package: libpolarssl
+Version: </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1.3</span>.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">9</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Depends: libc
+Status: <strong style="margin: 0px; padding: 0px;">unknown ok not</strong></span><strong style="margin: 0px; padding: 0px;">-</strong><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"><strong style="margin: 0px; padding: 0px;">installed</strong>
+Section: libs
+Architecture: x86
+MD5Sum: 1b6f66f94eb1f5a47959be09ccefbf2c
+Size: </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">140082</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Filename: libpolarssl_1.</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">3.9</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2_x86.ipk
+Source: package</span>/libs/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">polarssl
+Description: The aim of the PolarSSL project is to provide a quality, open</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">source
+ cryptographic library written </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">in</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> C and targeted at embedded systems.
+ This package contains the PolarSSL library.</span></pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>然后使用 install 命令安装：
+					</div>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# ./opkg <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">install</span> libpolarssl -f /etc/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">opkg.conf
+Installing libpolarssl (</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1.3</span>.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">9</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">) on root.
+Downloading http:</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">//</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 128, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">downloads.openwrt.org/barrier_breaker/14.07/x86/generic/packages/base/libpolarssl_1.3.9-2_x86.ipk.</span>
+Configuring libpolarssl.</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">可以查看该软件的control文件：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+root@OpenWrt:~# <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">cat</span> /var/lib/opkg/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">info</span>/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">libpolarssl.control
+Package: libpolarssl
+Version: </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">1.3</span>.<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">9</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Depends: libc
+Source: </span>/home/jow/relman/.cache/feeds/base/package/libs/<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">polarssl
+License: GPL</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">2.0</span>+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Section: libs
+Architecture: x86
+Installed</span>-Size: <span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(128, 0, 128); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">140583</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">
+Description:  The aim of the PolarSSL project is to provide a quality, open</span>-<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">source
+ cryptographic library written </span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">in</span><span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 0); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;"> C and targeted at embedded systems.
+ This package contains the PolarSSL library.</span></pre>
+							<div class="cnblogs_code_toolbar" style="margin: 5px 0px 0px; padding: 0px; background-color: rgb(245, 245, 245);"><span class="cnblogs_code_copy" style="margin: 0px; padding: 0px 5px 0px 0px; line-height: 1.8; font-family: 'Courier New' !important; font-size: 12px !important;"><a href="" onclick="" title="复制代码" style="margin: 0px; padding: 0px; text-decoration: none; color: rgb(0, 0, 0); border: none !important; background-color: rgb(245, 245, 245) !important;"><img src="data:image/gif;base64,R0lGODlhFAAUANQHADJKYpKluc3P05qy4jJdta/M92KQ3vv8/nKi4rK/0rLC6mJ6mtHe7sHN4ZW19iJLmUp2wqKy0nKa8iJCgsLV9uLq8qKywnKa2oKy4lKC0qLC8qKqwnKS0oKn7cDI1AAAACH5BAEAAB8ALAAAAAAUABQAAAWE4CeOZGmeaKquLKkoSRwJrXLch7XQa4IfAc+ud6AUGIHCS+NwME6WX6Xw6xAaps2BiUFofpICwVMK3CoVxuDQZBgIhEf50EVc1rgKJSInmRkMDQ0dBx0IBhkZfGUAjY0cOAwUChZ9KQYHiIkZG5YoEAcRohYbAZ4nEHAPq6sTLa+wsSUhADs=" alt="复制代码" style="margin: 0px; padding: 0px; height: auto; max-width: 100%; border: none !important; background-color: rgb(245, 245, 245) !important;" /></a></span>
+							</div>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">成功。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(9)&nbsp;&nbsp;&nbsp;&nbsp; 安装数据文件：在第(8)步中已看到，ipk文件中除了control.tar.gz还有一个data.tar.gz，这个就是该软件包的所有文件（可执行程序、配置文件等），这一步就是把data.tar.gz内的文件解压到 root_dir 下面。解压完成后，还有两件事：a. 设置内存中该软件包的Essential字段；b. 将该软件包含的文件写到 info_dir 下面的 list文件中。所以在 info_dir 下面可以看到每个软件包都有两个文件：control文件和list文件。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(10) &nbsp;检查冲突文件：主要是处理replace类型的软件包，函数为：<br style="margin: 0px; padding: 0px;" />check_data_file_clashes_change() 。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(11) &nbsp;设置配置文件：在安装软件的时候，用户如果之前安装过该软件的其他版本，那么可能对配置文件做过修改，因此这一步会进行适当的设置，当发现新旧配置文件有所不同时，除非用户明确指定强制、或忽略维护者设置（即新软件默认的设置），否则opkg会检查是否存在备份配置文件，如果存在，则默认使用备份的设置。备份的文件配置通常为“配置文件名称 -opkg.backup”，例如dhcp的配置文件为/etc/config/dhcp，那么它的备份文件命名为/etc/config/dhcp-opkg.backup。使用--force-maintainer来强制使用新配置，实用--ignore-maintainer来忽略新配置。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">安装完成后，需要对软件进行配置，这个动作与opkg configure命令是一样的。配置动作只针对标记为UNPACKED的软件包，而新安装的软件包总是包含这个标记。软件包的配置，是通过运行postinst脚本，这个脚本位于info_dir下面，以“软件包名称 . postinst”命名，如果存在这个文件，opkg通过 system() 函数，执行命令：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<div class="cnblogs_code" style="margin: 5px 0px; padding: 5px; background-color: rgb(245, 245, 245); border: 1px solid rgb(204, 204, 204); overflow: auto; color: rgb(0, 0, 0); font-family: 'Courier New' !important; font-size: 12px !important;">
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 0px; word-wrap: break-word; font-family: 'Courier New' !important; font-size: 12px !important;">
+<span style="margin: 0px; padding: 0px; line-height: 1.8; color: rgb(0, 0, 255); font-family: &quot;Courier New&quot; !important; font-size: 12px !important;">sh</span> -c $postinst configure</pre>
+						</div>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">由于暂时没有发现包含postinst脚本的软件，所以这个过程暂时不知。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">6.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 升级 upgrade
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">更新操作基本上与安装相同，前面也已经提到了更新操作的一些不同之处，例如如果升级、强制降级的问题等。更新upgrade命令后面可以有参数，表示升级指定的软件包，如果软件包尚未安装，则不会执行安装动作；如果upgrade没有参数，那么opkg将尝试升级所有软件包（类似apt-get upgrade）。安装完成后，同样执行配置动作。如果有必要，更新status文件中该软件的状态。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">7.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 删除 remove
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">删除软件包的过程如下：
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(1)&nbsp;&nbsp;&nbsp;&nbsp; 检查Essential 标记：如果该软件包为Essential的，除非用户强制删除（使用--force-removal-of-essential-packages参数），否则opkg拒绝删除该软件；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(2)&nbsp;&nbsp;&nbsp;&nbsp; 检查依赖：检查系统中有哪些其他的软件包依赖于要删除的软件包，如果有，那么打印出依赖于该软件包的其他软件包，然后结束删除动作；如果用户希望强制删除该软件以及依赖于该软件的所有其他软件，可以使用--force-removal-of-dependent-packages参数，opkg将首先删除依赖于该软件的其他软件；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(3)&nbsp;&nbsp;&nbsp;&nbsp; 执行删除前脚本：如果软件在删除前需要做一些动作，比如结束正在运行的进程等等，那么在info_dir下面会有一个“软件包名称 . prerm”的脚本，opkg首先执行：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">sh -c $prerm remove
+						</p>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(4)&nbsp;&nbsp;&nbsp;&nbsp; 删除文件：该软件包含的全部文件保存在list_dir下面的“软件包名称 . list”文件中，每行一个，opkg会删除该软件所包含的全部文件，然后将 .list 文件一并删除；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(5)&nbsp;&nbsp;&nbsp;&nbsp; 执行删除后脚本：如果软件在删除后需要做一些清理动作，比如某些临时文件等等，那么在info_dir下面会有一个“软件包名称 . postrm”的脚本，opkg会执行：
+					</p>
+					<div style="margin: 0px; padding: 0px;">
+						<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">sh -c $postrm remove
+						</p>
+					</div>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(6)&nbsp;&nbsp;&nbsp;&nbsp; 删除维护者脚本：删除在info_dir下面的control文件；
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">(7)&nbsp;&nbsp;&nbsp;&nbsp; 自动删除其他软件：如果用户在remove命令后加了--autoremove参数，opkg会尝试删除安装此软件包时自动安装的其他软件包（如果有）。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">删除动作完成后，更新status文件中软件包的状态。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">8.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 清理 clean
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">清理就是删除cache文件夹下面的文件。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">&nbsp;
+					</p>
+					<h2 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); line-height: 1.5; font-size: 21px;">三、其他
+					</h2>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">1. 加锁
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">在opkg加载配置文件（函数opkg_conf_load()）中，读取所有配置之前，会创建一个 /var/run/opkg.lock 的文件，并对该文件进行加锁（lockf()），在配置文件读取完毕后，释放锁，并删除这个文件。但不知为什么执行其他的操作，比如安装、删除等动作时，opkg反而不加锁了。
+					</p>
+					<h3 style="margin: 10px 0px; padding: 0px; font-weight: bold; color: rgb(0, 0, 0); font-size: 16px; line-height: 1.5;">2. 生成软件包
+					</h3>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">生成Opkg格式的软件包，只需按照固定的格式填写一份Makefile即可<sup style="margin: 0px; padding: 0px;">6 7</sup>，官方文档说明的已经非常详细，此不赘述。
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;"><br />
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;"><br />
+					</p>
+					<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">
+					</p>
+					<h1 class="postTitle" style="margin: 0px 0px 20px; padding: 0px; font-size: 28px; font-weight: 400; line-height: 1.8; color: rgb(51, 51, 51); font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;"><a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/chengyi818/p/4774043.html" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); text-decoration: none;"><span style="margin: 0px; padding: 0px; vertical-align: middle;">openwrt简单ipk生成及Makefile解释</span></a>
+					</h1>
+					<div class="clear" style="margin: 0px; padding: 0px; clear: both; color: rgb(125, 139, 141); font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;">
+					</div>
+					<div class="postBody" style="margin: 0px; padding: 0px; color: rgb(125, 139, 141); font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;">
+						<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown" style="margin: 0px 0px 20px; padding: 0px; word-break: break-word; color: rgb(51, 51, 51); line-height: 1.8;">
+							<h2 id="前言" style="margin: 20px 0px; padding: 0px; font-size: 21px; font-weight: bold; line-height: 1.5;">前言
+							</h2>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">类似的文章其实网上比较多了,我写这个的目的:
+							</p>
+							<blockquote style="margin: 0px; padding: 8px 10px; background: none; border-left: 5px solid rgb(221, 221, 221); border-top: none; border-right: none; border-bottom: none; border-image: initial;">
+								<p style="margin: 0px; padding: 0px; text-indent: 0px; color: rgb(119, 119, 119);">1,网上文章良莠不齐,有些自己都没实际动手操作,随便复制粘贴,实际操作不可行.<br style="margin: 0px; padding: 0px;" />2,基本只讲了操作,我当时最关心的Makefile文件的解释没有.
+								</p>
+							</blockquote>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">所以我自己总结了一篇.
+							</p>
+							<hr style="margin: 0px; padding: 0px;" />
+							<h3 id="说明" style="margin: 10px 0px; padding: 0px; font-size: 16px; font-weight: bold; line-height: 1.5;">说明
+							</h3>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">开发板为MT7620a,openwrt版本为:barrier_breaker_14.07.编译主机为ubuntu 14.04 32位.<br style="margin: 0px; padding: 0px;" />
+								<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+git clone git://git.openwrt.org/14.07/openwrt.git</code><br style="margin: 0px; padding: 0px;" />关于怎么搭建编译环境以及编译请参考<a href="http://blog.chinaunix.net/uid-22547469-id-4364254.html" style="margin: 0px; padding: 0px; color: rgb(0, 0, 0); text-decoration: underline;">网上</a>
+							</p>
+							<hr style="margin: 0px; padding: 0px;" />
+							<h2 id="正文" style="margin: 20px 0px; padding: 0px; font-size: 21px; font-weight: bold; line-height: 1.5;">正文
+							</h2>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">下面我们开始,我们遵循传统以helloworld开始.
+							</p>
+							<h3 id="1创建helloworld项目" style="margin: 10px 0px; padding: 0px; font-size: 16px; font-weight: bold; line-height: 1.5;">1.创建helloworld项目
+							</h3>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">首先我们新建helloworld.c文件和对应的Makefile文件
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="hljs shell" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;"><span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;">mkdir -p ~/temp/hellworld/src</span>
+<span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;"><span class="hljs-built_in" style="margin: 0px; padding: 0px; color: rgb(0, 0, 255);">cd</span> ~/temp/helloworld/src</span>
+<span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;">touch helloworld.c Makefile</span>
+</code></pre>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">如下为helloworld.c的内容:
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="hljs cpp" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;"><span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">#<span class="hljs-meta-keyword" style="margin: 0px; padding: 0px;">include</span> <span class="hljs-meta-string" style="margin: 0px; padding: 0px;">&lt;stdio.h&gt;</span></span>
+<span class="hljs-function" style="margin: 0px; padding: 0px;"><span class="hljs-keyword" style="margin: 0px; padding: 0px; color: rgb(0, 0, 255);">int</span> <span class="hljs-title" style="margin: 0px; padding: 0px; color: rgb(163, 21, 21);">main</span><span class="hljs-params" style="margin: 0px; padding: 0px;">()</span>
+</span>{
+    <span class="hljs-built_in" style="margin: 0px; padding: 0px; color: rgb(0, 0, 255);">printf</span>(<span class="hljs-string" style="margin: 0px; padding: 0px; color: rgb(163, 21, 21);">"This is my helloworld!\n"</span>);
+    <span class="hljs-keyword" style="margin: 0px; padding: 0px; color: rgb(0, 0, 255);">return</span> <span class="hljs-number" style="margin: 0px; padding: 0px;">0</span>;
+}
+</code></pre>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">如下为Makefile文件的内容:
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="hljs javascript" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">helloworld : helloworld.o
+	$(CC) $(LDFLAGS) helloworld.o -o helloworld
+
+helloworld.o : helloworld.c
+	$(CC) $(CFLAGS) -c helloworld.c
+
+clean :
+	rm *.o helloworld
+</code></pre>
+							<dl style="margin: 0px; padding: 0px;">
+								<dt style="margin: 0px; padding: 0px;">$(CC)
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">这个值由其他Makefile文件规定,表示我们使用编译器.
+								</dd>
+								<dt style="margin: 0px; padding: 0px;">$(LDFLAGS)&amp;$(CFLAGS)
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">这个表示编译器的一些选项,这里是可选的,去掉也没有问题.
+								</dd>
+							</dl>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">下面可以输入<span>&nbsp;</span>
+								<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$make</code>看看有没有问题,注意Makefile文件的书写格式.<br style="margin: 0px; padding: 0px;" />最后,输入<span>&nbsp;</span>
+								<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$make clean</code>来清理掉生成的二进制文件.因为上一步<span>&nbsp;</span>
+								<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+make</code>所使用的编译器并不是我们的交叉编译链,生成的二进制文件并不能在开发板中运行.上一步只是验证我们的src中的内容正确与否.
+							</p>
+							<hr style="margin: 0px; padding: 0px;" />
+							<h3 id="2创建helloworld包" style="margin: 10px 0px; padding: 0px; font-size: 16px; font-weight: bold; line-height: 1.5;">2.创建helloworld包
+							</h3>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">下一步我们要创建一个新的Makefile文件,在这个文件中我们要描述的是helloworld包的信息,比如:如何配置,如何编译,如何打包,安装位置等.
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="hljs shell" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;"><span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;"><span class="hljs-built_in" style="margin: 0px; padding: 0px; color: rgb(0, 0, 255);">cd</span> ~/temp/helloworld</span>
+<span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;">touch Makefile</span>
+</code></pre>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">如下为Makefile内容:
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="language-bash hljs" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">include $(TOPDIR)/rules.mk
+
+PKG_NAME:=helloworld
+PKG_RELEASE:=1
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
+
+include $(INCLUDE_DIR)/package.mk
+
+define Package/helloworld
+	SECTION:=utils
+	CATEGORY:=Utilities
+	TITLE:=Helloworld -- prints a snarky message
+endef
+
+define Package/helloworld/description
+	It<span class="hljs-string" style="margin: 0px; padding: 0px; color: rgb(163, 21, 21);">'s my first package demo.
+endef
+
+define Build/Prepare
+	echo "Here is Package/Prepare"
+	mkdir -p $(PKG_BUILD_DIR)
+    $(CP) ./src/* $(PKG_BUILD_DIR)/
+endef
+
+define Package/helloworld/install
+	echo "Here is Package/install"
+	$(INSTALL_DIR) $(1)/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/helloworld $(1)/bin/
+endef
+	
+$(eval $(call BuildPackage,helloworld))
+</span></code></pre>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">如下是最后的文件树形图:<br style="margin: 0px; padding: 0px;" /><img src="http://i3.tietuku.com/8e9f244567388099.jpg" alt="树形图" loading="lazy" style="margin: 0px; padding: 0px; border: none; height: auto; max-width: 800px;" />
+							</p>
+							<hr style="margin: 0px; padding: 0px;" />
+							<h3 id="3makefile注释" style="margin: 10px 0px; padding: 0px; font-size: 16px; font-weight: bold; line-height: 1.5;">3.Makefile注释
+							</h3>
+							<dl style="margin: 0px; padding: 0px;">
+								<dt style="margin: 0px; padding: 0px;">第1行<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+include $(TOPDIR)/rules.mk</code>
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">一般在Makefile的开头,包含了包的基本信息,比如Makefile中的<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(BUILD_DIR)</code>,<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(INCLUDE_DIR)</code>,<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(CP)</code>,<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(INSTALL_DIR)</code>,<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(INSTALL_BIN)</code>都是这里定义的.具体内容可以到源码主目录下,查看<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+rules.mk</code>文件.
+								</dd>
+								<dt style="margin: 0px; padding: 0px;">3~5行,软件包的信息均以“PKG_”开头，其意思和作用如下
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">PKG_NAME：软件包名称，将在menuconfig和ipkg可以看到。<br style="margin: 0px; padding: 0px;" />PKG_VERSION：软件版本号。<br style="margin: 0px; padding: 0px;" />PKG_RELEASE：Makefile的版本号<br style="margin: 0px; padding: 0px;" />PKG_SOURCE：源代码的文件名。<br style="margin: 0px; padding: 0px;" />PKG_SOURCE_URL：源代码的下载网站位置。<br style="margin: 0px; padding: 0px;" />PKG_MD5SUM：源代码文件的效验码。用于核对软件包是否下载正确。<br style="margin: 0px; padding: 0px;" />PKG_CAT：源代码文件的解压方法。包括zcat, bzcat, unzip等。<br style="margin: 0px; padding: 0px;" />PKG_BUILD_DIR：软件包编译目录。它的父目录为$(BUILD_DIR)。
+								</dd>
+								<dt style="margin: 0px; padding: 0px;">第7行<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+include $(INCLUDE_DIR)/package.mk</code>
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">一般在软件包的基本信息完成后再引入，他定义了用户态软件包的规则。编译包分为用户态和内核模块，用户态软件包使用Package，内核模块使用KernelPackage.<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(INCLUDE_DIR)/Kernel.mk</code>文件对于软件包为内核时不可缺少，<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(INCLUDE_DIR)/package.mk</code>应用在用户态。接下来讲述用户态软件包。用户程序的编译包以<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+Package/</code>开头，然后接着软件名，在Package定义中的软件名可以与软件包名不一样，而且可以多个定义。
+								</dd>
+								<dt style="margin: 0px; padding: 0px;">9~13行
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">定义包的名称为<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+helloworld</code><br style="margin: 0px; padding: 0px;" />SECTION : 包的类型为<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+utils</code><br style="margin: 0px; padding: 0px;" />CATEGORY : 目录为Utilitis,即文件在<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+menuconfig</code>中的位置;有时还会有<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+SUBMENU</code>项,即子目录.<br style="margin: 0px; padding: 0px;" />TITLE : 用于软件包的简短描述,将显示在<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+menuconfig</code>中.<br style="margin: 0px; padding: 0px;" />URL ： 软件包的下载位置。<br style="margin: 0px; padding: 0px;" />MAINTAINER ： 维护者选项。<br style="margin: 0px; padding: 0px;" /><strong style="margin: 0px; padding: 0px;">DEPENDS</strong><span>&nbsp;</span>： 与其他软件的依赖。即如编译或安装需要其他软件时需要说明。如果存在多个依赖，则每个依赖需用空格分开。依赖前使用+号表示默认显示，即对象沒有选中时也会显示，使用@则默认为不显示，即当依赖对象选中后才显示。
+								</dd>
+								<dt style="margin: 0px; padding: 0px;">15~17行
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">软件包的详细描述,将显示在<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+make menuconfig</code>中
+								</dd>
+								<dt style="margin: 0px; padding: 0px;">19~23行
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">编译准备方法，对于网上下载的软件包不需要再描述。对于非网上下载或自行开发的软件包必须说明编译准备方法。本文所用的准备方法就是首先创建软件包目录，然后将源码拷贝到刚刚创建的目录中。按OpenWrt的习惯，一般把自己设计的程序全部放在src目录下。
+								</dd>
+								<dt style="margin: 0px; padding: 0px;">25~29行
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">软件包的安装方法，包括一系列拷贝编译好的文件到指定位置。调用时会带一个参数，就是嵌入系统的镜像文件系统目录，因此$(1)表示嵌入系统的镜像目录。<br style="margin: 0px; padding: 0px;" />
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+INSTALL_DIR:=install -d -m0755</code><span>&nbsp;</span>: 创建所属用戶可读写、执行，其他用戶可读可执行的目录<br style="margin: 0px; padding: 0px;" />
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+INSTALL_BIN:=install -m0755</code><span>&nbsp;</span>: 编译好的文件到镜像文件目录
+								</dd>
+								<dt style="margin: 0px; padding: 0px;">31行<span>&nbsp;</span><span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(eval $(call BuildPackage,helloworld))</code>
+								</dt>
+								<dd style="margin: 0px; padding: 0px;">完成前面定义后，必须使用eval函数实现各种定义。其格式为：<br style="margin: 0px; padding: 0px;" />对于一般软件包：<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(eval $(call Package,$(PKG_NAME)))</code><br style="margin: 0px; padding: 0px;" />或对于内核模块：<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+$(eval $(call KernelPackage,$(PKG_NAME)))</code><br style="margin: 0px; padding: 0px;" />如果一个软件包有多个程序，例如：一个应用程序有自己的内核模块，上面使用的<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+PKG_NAME</code>需要灵活变通。<span>&nbsp;</span>
+									<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+eval</code>函数可能设计多个。也可以当成多个软件包处理。
+								</dd>
+							</dl>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">这里简单地解释了Makefile文件,更具体地请<a href="http://wiki.openwrt.org/doc/devel/packages" style="margin: 0px; padding: 0px; color: rgb(0, 0, 0); text-decoration: underline;">参考</a>
+							</p>
+							<hr style="margin: 0px; padding: 0px;" />
+							<h3 id="4编译软件" style="margin: 10px 0px; padding: 0px; font-size: 16px; font-weight: bold; line-height: 1.5;">4.编译软件
+							</h3>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">至此我们的软件已经基本完成,下面进行编译<br style="margin: 0px; padding: 0px;" />首先将文件文件夹拷贝到<strong style="margin: 0px; padding: 0px;">openwrt目录中的package文件中</strong>,这里我的源码目录为<span>&nbsp;</span>
+								<code style="margin: 1px 5px; line-height: 1.8; vertical-align: middle; display: inline-block; overflow-x: auto; padding: 0px 5px !important; font-family: 'Courier New', sans-serif !important; font-size: 12px !important; background-color: rgb(245, 245, 245) !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">
+~/openwrt</code>,你需要把openwrt目录替换为你的openwrt源码目录.
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="hljs groovy" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;">$mv <span class="hljs-regexp" style="margin: 0px; padding: 0px;">~/temp/</span>helloworld <span class="hljs-regexp" style="margin: 0px; padding: 0px;">~/openwrt/</span><span class="hljs-keyword" style="margin: 0px; padding: 0px; color: rgb(0, 0, 255);">package</span>
+</code></pre>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">然后回到项目主目录运行make menuconfig
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="hljs shell" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;"><span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;"><span class="hljs-built_in" style="margin: 0px; padding: 0px; color: rgb(0, 0, 255);">cd</span> ~/openwrt</span>
+<span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;">make menuconfig</span>
+</code></pre>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">按&quot;/&quot;后,输入helloworld,搜索对应的路径<br style="margin: 0px; padding: 0px;" /><img src="http://i3.tietuku.com/3376b2fa48621a57.png" alt="搜索" loading="lazy" style="margin: 0px; padding: 0px; border: none; height: auto; max-width: 800px;" /><br style="margin: 0px; padding: 0px;" /><img src="http://i3.tietuku.com/9947195c15c0d77f.png" alt="搜索结果" loading="lazy" style="margin: 0px; padding: 0px; border: none; height: auto; max-width: 800px;" />
+							</p>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">接着到Utilities目录下,找到helloworld并按空格打开;<br style="margin: 0px; padding: 0px;" /><img src="http://i3.tietuku.com/b389aec1d8d367ee.png" alt="打开编译开关" loading="lazy" style="margin: 0px; padding: 0px; border: none; height: auto; max-width: 800px;" /><br style="margin: 0px; padding: 0px;" />保存后退出;
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="hljs shell" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;"><span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;"><span class="hljs-built_in" style="margin: 0px; padding: 0px; color: rgb(0, 0, 255);">cd</span> ~/openwrt</span>
+<span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;">make package/helloworld/compile V=s</span>
+</code></pre>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">编译完成后,ipk应该已经生成
+							</p>
+							<pre style="border: 2px solid rgb(214, 214, 214); padding: 0px; border-radius: 3px; margin: 10px 0px;">
+<code class="hljs shell" style="margin: auto; vertical-align: middle; display: block; overflow-x: auto; background: rgb(255, 255, 255); height: auto; color: rgb(0, 0, 0); padding: 5px !important; line-height: 1.5 !important; font-family: &quot;Courier New&quot;, sans-serif !important; font-size: 12px !important; border: 1px solid rgb(204, 204, 204) !important; border-radius: 3px !important;"><span class="hljs-meta" style="margin: 0px; padding: 0px; color: rgb(43, 145, 175);">$</span><span class="bash" style="margin: 0px; padding: 0px;">find bin/ -name <span class="hljs-string" style="margin: 0px; padding: 0px; color: rgb(163, 21, 21);">"helloworld*.ipk"</span></span>
+</code></pre>
+							<p style="margin: 10px auto; padding: 0px; text-indent: 0px;">至此我们已经生成简单的ipk,恭喜:)<br style="margin: 0px; padding: 0px;" />最后可以通过<a href="http://pan.baidu.com/s/1bnHfXyJ" style="margin: 0px; padding: 0px; color: rgb(0, 0, 0); text-decoration: underline;">winscp</a>,将ipk<a href="http://www.openwrt.org.cn/bbs/forum.php?mod=viewthread&tid=3238" style="margin: 0px; padding: 0px; color: rgb(0, 0, 0); text-decoration: underline;">安装</a>到开发板中.<br style="margin: 0px; padding: 0px;" /><img src="http://i3.tietuku.com/1ac2f9939aa02cb9.jpg" alt="结局" loading="lazy" style="margin: 0px; padding: 0px; border: none; height: auto; max-width: 800px;" />
+							</p>
+							<hr style="margin: 0px; padding: 0px;" />
+							<h2 id="尾记" style="margin: 20px 0px; padding: 0px; font-size: 21px; font-weight: bold; line-height: 1.5;">尾记
+							</h2>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

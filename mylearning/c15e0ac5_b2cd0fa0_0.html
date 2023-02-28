@@ -1,0 +1,218 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(四)：第一次刷机
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-05-01 11:00
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：1.开发板用网线接上电脑；2.将下载的适配版OpenWRT导入开发板;3.提示“root@OpenWrt:/#”等信息表示刷机成功。看，刷路由就
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;"><strong style="font-style: normal; font-weight: bold;">题记</strong>：冲，而用之或不盈。渊兮，似万物之宗。挫其锐，解其纷，和其光，同其尘。湛兮似或存。吾不知谁之子，象帝之先。</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://www.leiphone.com/tag/diy%e6%99%ba%e8%83%bd%e8%b7%af%e7%94%b1" target="_blank" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;">经过前边三个章节</a>，想必大部分人对路由器可以有一个初步了解，甚至有的童鞋已经拿到了自己心仪的板子用来做开发测试。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">从本章开始，我们将进入动手阶段，这个阶段需要有板子来操作。无板子操作干看也行，但是这就是像一桌子吃饭，别人吃的满嘴流油，你流口水，这像话么。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">进入设备的开发模式
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">为什么说一定要进入这个呢，其实如果你不开发嵌入式设备，也可以不进串口，但是hoowa觉得，在软件调试的时候，还是需要进到这里来，这里的信息比telnet看到的多很多。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">一般路由器设备上面都会留有4个针脚，有的焊了排针，有的没焊。这四个针脚就是他的调试串口。 算了说的太复杂了，就这么讲吧，<strong style="font-style: normal; font-weight: bold;">我们的电脑有显示器，有鼠标有键盘，这叫输入输出接口，用于人机对话的。路由器也有，路由器上就是串口，只要把串口连接到你的电脑上，你就可以看到系统里的东西。</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">教学套件的硬件中已经包含了一个USB to TTL的串口板，他是专门用来实现连接路由器串口的。如果你不是教学资料自己的板子，请去淘宝上搜索&quot;USB to TTL&quot;查找自己心仪的转换器，不过需要大家注意的是，有的路由器跟转换芯片之间存在不兼容现象，如果遇到此种现象，请更换路由器或更换转换芯片。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">连接设备第一步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">将串口板的小板子驱动先在系统中安装完成，如果是Linux有的已经具备了这个驱动，并且自动识别成为了dev下的一个com口设备。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">连接设备第二步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">将串口板连接到计算机上，等待Windows识别这个板子，然后查看您计算机的“设备管理器”，是否多了这么一个东西:
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; text-align: center;"><a href="http://static.leiphone.com/uploads/2014/05/4-%E4%B8%B2%E5%8F%A3%E6%9D%BF%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%AE%BE%E5%A4%87.png" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a><br />(图：串口板的系统设备)
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">请记住(COMX)这个设备，其中X表示这个板子在你系统中当前的串口编号。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">连接设备第三步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">将M150开发板连接到串口板上
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; text-align: center;"><a href="http://static.leiphone.com/uploads/2014/05/4-%E4%B8%BB%E6%9D%BF%E4%B8%B2%E5%8F%A3%E5%AE%9A%E4%B9%891.png" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a><br />(图：主板串口定义)
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">主板跟串口板连接器的连接如下表:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">主板 串口小板<br />RX&lt;-------------&gt;TX<br />TX&lt;-------------&gt;RX<br />GND&lt;------------&gt;GND
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">上面的表大家明白吧，就是很基本的电子连接，一个收(RX)，一个发(TX)，再有一条地线(GND)，就可以传输了。串口线的线序是红+5V、黑GND、白RXD、绿TXD。需要大家注意的是，VCC或V3.3就不要连接了，那个是供电的，如果连接了可能会烧毁串口板哦。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">连接设备第四步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">去www.putty.org下载一个putty这个小工具。然后打开连接类型选择Serial。Serial line里填写COMX(就是你刚才的那个串口的号)。Speed填写115200。然后点击打开。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">请注意，由于各种设备的配置不同和Uboot不同，如果你使用的不是M150，连接速率请像你的供货商询问。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; text-align: center;"><a href="http://static.leiphone.com/uploads/2014/05/4-putty%E7%9A%84%E9%85%8D%E7%BD%AE.png" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a><br />(图：putty配置)
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">putty的使用方式，本文不再讲解。如果没用过putty的，请自己上网学习。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">连接设备第五步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">打开路由器的电源。这个时候屏幕中应该可以看到很多信息了。效果差不多如下:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">U-Boot 1.1.4 (Apr 11 2013 - 01:45:00)
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">DRAM: 64 MB<br />led turning on for 1s...<br />id read 0x100000ff<br />flash size 8388608, sector count = 128<br />Flash: 8 MB<br />Using default environment
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">然后大量的数据涌出，这表明系统已经在启动了，当系统启动差不多的时候，按下回车是否有反应，如果有反应表示你的串口连接已经OK了。hoowa希望在大家没有完全掌握产品之前，多用串口操作系统，这样即使设备崩溃了，崩溃信息也可以通过串口传输到你的个人电脑上。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">连接设备第六步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">串口板看起来简单，但是由于各类路由开发板产品质量不完全一样，因此可能存在的几个问题跟大家说明下。
+							</p>
+							<ul style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: disc;">putty打不开COM设备：驱动有问题，或参数填写有问题，或你那个板子有问题。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">开发板上电以后屏幕啥都不显示：那三条线连接的有问题。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">串口板过热或冒烟：恭喜你板子烧了，让你得瑟插到VCC过电了吧。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">屏幕显示了,但是现实的是乱码：可能是Speed速率没设置正确，也可能是线接触不良。重新连接所有设备，包括重插串口板。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">所有信息都能正常显示，但是按回车没反应并且也无法输入信息：可能还是线连接有错误注意看顺序，重新连接所有设备，包括重插串口板。
+								</li>
+							</ul>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果以上方法你连接还不行，要么是你的什么东西坏了，要么是你真的人品太烂了，请砸掉电脑。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">认识bootloader</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">经过上面的流程，可能有的朋友已经发现了，这个时候你已经进入系统了。可以输入一些标准的linux指令。那么不要那么急，我们再回过头讲下Bootloader（引导系统）。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在嵌入式设备中Bootloader的工作要更多，他要做一些基本的外部电子设备的检测，同时完成CPU所要求的初始化，再启动Flash上的Linux内核。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">Uboot是德国DENX小组开发、用于嵌入式CPU的Bootloader，它支持10多种不同的操作系统（包括x86架构）。其小巧速度快，已经成为了Atheros（高通）和Ralink（联发科）产品的标配引导系统，并且在所有嵌入式的引导系统中市场占有率最大。所以我们的开发板也是Uboot系统。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">硬件启动揭秘
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">很多书籍都详细讲解了Uboot如何引导的，其实我觉得讲了也没多大用，那玩意都是CPU厂家提供SDK里完善的东西，有几个人需要改那个啊。所以这里我改变下说法。我说说系统到底咋启动的。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">上电---&gt;晶振发起频率抖动---&gt;CPU启动内部代码---&gt;Uboot启动---&gt;Uboot根据参数设置倍频---&gt;Uboot进行一些其他的内部寄存器配置---&gt;Uboot启动操作系统
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">首先设备上电，上电后晶振开始发起一个指定频率的震动，这个时候CPU就根据晶振的频率进行了启动，CPU工作在晶振频率下启动自己的内部代码(CPU内部有一小段代码和一点点内存，用来做最基础的事情，并且查找bootloader在哪)，然后启动uboot，最后进入操作系统。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">好吧，我承认，这个太复杂了，我换个说法，汽车打火的时候需要启动机，启动以后，只要给发动机油，发动机就可以工作在高转速下，带着人出去跑了。CPU也是这个原理。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">&quot;Hoowa Teching Openwrt-AA&quot;介绍</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本文中实践所用系统，是由hoowa定制的一套OpenWRT系统，全称叫做“Hoowa Teching Openwrt-AA”，最后的AA指“attitude_adjustment”。这套系统跟OpenWRT官方项目高度兼容，并且教学文章所有的软件包源代码都开放下载。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">服务器地址: http://182.92.3.46/hoowa/openwrt/120901/ar71xx/<br />M150固件文件: openwrt-ar71xx-generic-el-m150-v1-squashfs-sysupgrade.bin
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">其他固件，请<a href="http://www.leiphone.com/diy-a-smart-router-topic-device.html" target="_blank" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;">查阅列表</a>，如列表中没有你所使用的自行购买的硬件，请向你的经销商询问是否支持官方OpenWRT固件，如果也不支持，请扔掉那个电路板。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第一次刷机
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本来hoowa想从怎么编译固件开始，但是又觉得太深了，我们要深入浅出，所以，我们先从刷固件开始。这样，让大家先熟悉系统，以后再介绍那些更为精彩的世界。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">刷机第一步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">请首先下载固件文件，准备使用。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold; line-height: 1.5em;">刷机第二步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><em style="font-style: italic; font-weight: normal;"><strong style="font-style: normal; font-weight: bold;">(ps：如果你不是本教程的M150开发板，请参考本教程的流程并向经销商询问Uboot的刷机使用方法，以下步骤均仅针对教程板型)</strong></em>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">下载好以后，将你的电脑用网线连接到开发板三个网口里中间那个。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">请注意两点：1.<span style="color: rgb(255, 0, 0);">你的串口板子要连接电脑的putty</span>，这样才能知道刷机的过程中到底有什么信息输出；2.<span style="color: rgb(255, 0, 0);">最好是直接连接网线并断开无线网络</span>，防止部分交换机刷机过程中闪断失败或IP地址冲突造成电脑路由表不对。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="color: rgb(255, 0, 0);">按住Reset按钮，同时给路由器上电</span>，通过Putty看到如下信息后松开Reset按键:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">eth1: 00:03:7f:ff:ff:fe<br />athrs26_reg_init_lan<br />ATHRS26: resetting s26<br />ATHRS26: s26 reset done<br />eth1 up<br />eth0, eth1<br />Enter Backup Mode...<br />eth1 link down<br />eth0 link down<br />eth1 link down<br />uip init...<br />http init...<br />eth1 link down<br />eth1 link down<br />……<br />eth1 link down<br /><span style="line-height: 1.5em;">eth1 link down<br /></span>dup 1 speed 1000
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">刷机第三步：</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">将电脑网卡设置为固定IP地址192.168.1.X的地址，通过浏览器(建议使用通用浏览器如IE、Chrome等，不推荐使用加壳浏览器)访问192.168.1.1，你将看到刷机的界面。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">用那个选择文件的按钮选中固件openwrt-ar71xx-generic-tl-wr720n-v3-squashfs-sysupgrade.bin这个文件，然后提交。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">提交后观察Putty界面显示的内容：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">upgrade firmware now!
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">Uploaded RunTime Image is 2949124 Bytes<br />We will update the ==firmware== NOW!
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">First 0x2 last 0x7e sector size 0x10000<span>&nbsp;</span><span style="color: rgb(255, 0, 0);">86</span>
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">其中那个86表示当前处理的位置计数是一直变化的。当写入完成后屏幕将显示:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">Erased 125 sectors<br />write addr: 9f020000<br />Finish Upgra
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">U-Boot 1.1.4 (Apr 11 2013 - 01:45:00)<br />....<br />procd: - init complete -
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">中间有大量系统启动信息，暂时不用理会。按下回车后显示：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/146.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">表示你刷机完成。（刷机完成后，别忘了取消掉你的网卡上的固定IP地址哦～。）
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">第一次刷机完成后记得要重新启动下：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# reboot
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果你在以上刷机流程遇到了问题，请清空浏览器，或更换浏览器，最不济更换个电脑吧，然后重复操作以上步骤。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在本章刷机已经完成，细心的朋友会发现这个时候系统已经可用了，没错，现在你已经有了一个自己的纯净版的OpenWRT系统，具备了最最最底层OpenWRT的支持，这个时候你可以随便的去玩。玩坏了不要紧，还可以重新刷对不对。 随便折腾吧。在下章，我们将一起讨论下系统方面的知识，以及基本的系统指令和配置方法。
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

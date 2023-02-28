@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>crc32 算法有好几种， 常用的有crc32 ieee 802简称crc32I，还有种crc32C， crc32I比较常用，Windows 上压缩文件校验用的基本都是它
+		</div>
+		<div>下面是算法实现，crc32 初始值很重要，有时候用0，有时候用0xffffffff看具体实现，xz_crc32 写的比较好，xz_crc32可用于大文件分段求取crc32。
+		</div>
+		<div>
+			<pre>
+<code id="ID_1820F002DD6" class="hljs lsl">static unsigned int crc32_tab[] = {
+      <span class="hljs-number">0x00000000</span>L, <span class="hljs-number">0x77073096</span>L, <span class="hljs-number">0xee0e612c</span>L, <span class="hljs-number">0x990951ba</span>L, <span class="hljs-number">0x076dc419</span>L,
+      <span class="hljs-number">0x706af48f</span>L, <span class="hljs-number">0xe963a535</span>L, <span class="hljs-number">0x9e6495a3</span>L, <span class="hljs-number">0x0edb8832</span>L, <span class="hljs-number">0x79dcb8a4</span>L,
+      <span class="hljs-number">0xe0d5e91e</span>L, <span class="hljs-number">0x97d2d988</span>L, <span class="hljs-number">0x09b64c2b</span>L, <span class="hljs-number">0x7eb17cbd</span>L, <span class="hljs-number">0xe7b82d07</span>L,
+      <span class="hljs-number">0x90bf1d91</span>L, <span class="hljs-number">0x1db71064</span>L, <span class="hljs-number">0x6ab020f2</span>L, <span class="hljs-number">0xf3b97148</span>L, <span class="hljs-number">0x84be41de</span>L,
+      <span class="hljs-number">0x1adad47d</span>L, <span class="hljs-number">0x6ddde4eb</span>L, <span class="hljs-number">0xf4d4b551</span>L, <span class="hljs-number">0x83d385c7</span>L, <span class="hljs-number">0x136c9856</span>L,
+      <span class="hljs-number">0x646ba8c0</span>L, <span class="hljs-number">0xfd62f97a</span>L, <span class="hljs-number">0x8a65c9ec</span>L, <span class="hljs-number">0x14015c4f</span>L, <span class="hljs-number">0x63066cd9</span>L,
+      <span class="hljs-number">0xfa0f3d63</span>L, <span class="hljs-number">0x8d080df5</span>L, <span class="hljs-number">0x3b6e20c8</span>L, <span class="hljs-number">0x4c69105e</span>L, <span class="hljs-number">0xd56041e4</span>L,
+      <span class="hljs-number">0xa2677172</span>L, <span class="hljs-number">0x3c03e4d1</span>L, <span class="hljs-number">0x4b04d447</span>L, <span class="hljs-number">0xd20d85fd</span>L, <span class="hljs-number">0xa50ab56b</span>L,
+      <span class="hljs-number">0x35b5a8fa</span>L, <span class="hljs-number">0x42b2986c</span>L, <span class="hljs-number">0xdbbbc9d6</span>L, <span class="hljs-number">0xacbcf940</span>L, <span class="hljs-number">0x32d86ce3</span>L,
+      <span class="hljs-number">0x45df5c75</span>L, <span class="hljs-number">0xdcd60dcf</span>L, <span class="hljs-number">0xabd13d59</span>L, <span class="hljs-number">0x26d930ac</span>L, <span class="hljs-number">0x51de003a</span>L,
+      <span class="hljs-number">0xc8d75180</span>L, <span class="hljs-number">0xbfd06116</span>L, <span class="hljs-number">0x21b4f4b5</span>L, <span class="hljs-number">0x56b3c423</span>L, <span class="hljs-number">0xcfba9599</span>L,
+      <span class="hljs-number">0xb8bda50f</span>L, <span class="hljs-number">0x2802b89e</span>L, <span class="hljs-number">0x5f058808</span>L, <span class="hljs-number">0xc60cd9b2</span>L, <span class="hljs-number">0xb10be924</span>L,
+      <span class="hljs-number">0x2f6f7c87</span>L, <span class="hljs-number">0x58684c11</span>L, <span class="hljs-number">0xc1611dab</span>L, <span class="hljs-number">0xb6662d3d</span>L, <span class="hljs-number">0x76dc4190</span>L,
+      <span class="hljs-number">0x01db7106</span>L, <span class="hljs-number">0x98d220bc</span>L, <span class="hljs-number">0xefd5102a</span>L, <span class="hljs-number">0x71b18589</span>L, <span class="hljs-number">0x06b6b51f</span>L,
+      <span class="hljs-number">0x9fbfe4a5</span>L, <span class="hljs-number">0xe8b8d433</span>L, <span class="hljs-number">0x7807c9a2</span>L, <span class="hljs-number">0x0f00f934</span>L, <span class="hljs-number">0x9609a88e</span>L,
+      <span class="hljs-number">0xe10e9818</span>L, <span class="hljs-number">0x7f6a0dbb</span>L, <span class="hljs-number">0x086d3d2d</span>L, <span class="hljs-number">0x91646c97</span>L, <span class="hljs-number">0xe6635c01</span>L,
+      <span class="hljs-number">0x6b6b51f4</span>L, <span class="hljs-number">0x1c6c6162</span>L, <span class="hljs-number">0x856530d8</span>L, <span class="hljs-number">0xf262004e</span>L, <span class="hljs-number">0x6c0695ed</span>L,
+      <span class="hljs-number">0x1b01a57b</span>L, <span class="hljs-number">0x8208f4c1</span>L, <span class="hljs-number">0xf50fc457</span>L, <span class="hljs-number">0x65b0d9c6</span>L, <span class="hljs-number">0x12b7e950</span>L,
+      <span class="hljs-number">0x8bbeb8ea</span>L, <span class="hljs-number">0xfcb9887c</span>L, <span class="hljs-number">0x62dd1ddf</span>L, <span class="hljs-number">0x15da2d49</span>L, <span class="hljs-number">0x8cd37cf3</span>L,
+      <span class="hljs-number">0xfbd44c65</span>L, <span class="hljs-number">0x4db26158</span>L, <span class="hljs-number">0x3ab551ce</span>L, <span class="hljs-number">0xa3bc0074</span>L, <span class="hljs-number">0xd4bb30e2</span>L,
+      <span class="hljs-number">0x4adfa541</span>L, <span class="hljs-number">0x3dd895d7</span>L, <span class="hljs-number">0xa4d1c46d</span>L, <span class="hljs-number">0xd3d6f4fb</span>L, <span class="hljs-number">0x4369e96a</span>L,
+      <span class="hljs-number">0x346ed9fc</span>L, <span class="hljs-number">0xad678846</span>L, <span class="hljs-number">0xda60b8d0</span>L, <span class="hljs-number">0x44042d73</span>L, <span class="hljs-number">0x33031de5</span>L,
+      <span class="hljs-number">0xaa0a4c5f</span>L, <span class="hljs-number">0xdd0d7cc9</span>L, <span class="hljs-number">0x5005713c</span>L, <span class="hljs-number">0x270241aa</span>L, <span class="hljs-number">0xbe0b1010</span>L,
+      <span class="hljs-number">0xc90c2086</span>L, <span class="hljs-number">0x5768b525</span>L, <span class="hljs-number">0x206f85b3</span>L, <span class="hljs-number">0xb966d409</span>L, <span class="hljs-number">0xce61e49f</span>L,
+      <span class="hljs-number">0x5edef90e</span>L, <span class="hljs-number">0x29d9c998</span>L, <span class="hljs-number">0xb0d09822</span>L, <span class="hljs-number">0xc7d7a8b4</span>L, <span class="hljs-number">0x59b33d17</span>L,
+      <span class="hljs-number">0x2eb40d81</span>L, <span class="hljs-number">0xb7bd5c3b</span>L, <span class="hljs-number">0xc0ba6cad</span>L, <span class="hljs-number">0xedb88320</span>L, <span class="hljs-number">0x9abfb3b6</span>L,
+      <span class="hljs-number">0x03b6e20c</span>L, <span class="hljs-number">0x74b1d29a</span>L, <span class="hljs-number">0xead54739</span>L, <span class="hljs-number">0x9dd277af</span>L, <span class="hljs-number">0x04db2615</span>L,
+      <span class="hljs-number">0x73dc1683</span>L, <span class="hljs-number">0xe3630b12</span>L, <span class="hljs-number">0x94643b84</span>L, <span class="hljs-number">0x0d6d6a3e</span>L, <span class="hljs-number">0x7a6a5aa8</span>L,
+      <span class="hljs-number">0xe40ecf0b</span>L, <span class="hljs-number">0x9309ff9d</span>L, <span class="hljs-number">0x0a00ae27</span>L, <span class="hljs-number">0x7d079eb1</span>L, <span class="hljs-number">0xf00f9344</span>L,
+      <span class="hljs-number">0x8708a3d2</span>L, <span class="hljs-number">0x1e01f268</span>L, <span class="hljs-number">0x6906c2fe</span>L, <span class="hljs-number">0xf762575d</span>L, <span class="hljs-number">0x806567cb</span>L,
+      <span class="hljs-number">0x196c3671</span>L, <span class="hljs-number">0x6e6b06e7</span>L, <span class="hljs-number">0xfed41b76</span>L, <span class="hljs-number">0x89d32be0</span>L, <span class="hljs-number">0x10da7a5a</span>L,
+      <span class="hljs-number">0x67dd4acc</span>L, <span class="hljs-number">0xf9b9df6f</span>L, <span class="hljs-number">0x8ebeeff9</span>L, <span class="hljs-number">0x17b7be43</span>L, <span class="hljs-number">0x60b08ed5</span>L,
+      <span class="hljs-number">0xd6d6a3e8</span>L, <span class="hljs-number">0xa1d1937e</span>L, <span class="hljs-number">0x38d8c2c4</span>L, <span class="hljs-number">0x4fdff252</span>L, <span class="hljs-number">0xd1bb67f1</span>L,
+      <span class="hljs-number">0xa6bc5767</span>L, <span class="hljs-number">0x3fb506dd</span>L, <span class="hljs-number">0x48b2364b</span>L, <span class="hljs-number">0xd80d2bda</span>L, <span class="hljs-number">0xaf0a1b4c</span>L,
+      <span class="hljs-number">0x36034af6</span>L, <span class="hljs-number">0x41047a60</span>L, <span class="hljs-number">0xdf60efc3</span>L, <span class="hljs-number">0xa867df55</span>L, <span class="hljs-number">0x316e8eef</span>L,
+      <span class="hljs-number">0x4669be79</span>L, <span class="hljs-number">0xcb61b38c</span>L, <span class="hljs-number">0xbc66831a</span>L, <span class="hljs-number">0x256fd2a0</span>L, <span class="hljs-number">0x5268e236</span>L,
+      <span class="hljs-number">0xcc0c7795</span>L, <span class="hljs-number">0xbb0b4703</span>L, <span class="hljs-number">0x220216b9</span>L, <span class="hljs-number">0x5505262f</span>L, <span class="hljs-number">0xc5ba3bbe</span>L,
+      <span class="hljs-number">0xb2bd0b28</span>L, <span class="hljs-number">0x2bb45a92</span>L, <span class="hljs-number">0x5cb36a04</span>L, <span class="hljs-number">0xc2d7ffa7</span>L, <span class="hljs-number">0xb5d0cf31</span>L,
+      <span class="hljs-number">0x2cd99e8b</span>L, <span class="hljs-number">0x5bdeae1d</span>L, <span class="hljs-number">0x9b64c2b0</span>L, <span class="hljs-number">0xec63f226</span>L, <span class="hljs-number">0x756aa39c</span>L,
+      <span class="hljs-number">0x026d930a</span>L, <span class="hljs-number">0x9c0906a9</span>L, <span class="hljs-number">0xeb0e363f</span>L, <span class="hljs-number">0x72076785</span>L, <span class="hljs-number">0x05005713</span>L,
+      <span class="hljs-number">0x95bf4a82</span>L, <span class="hljs-number">0xe2b87a14</span>L, <span class="hljs-number">0x7bb12bae</span>L, <span class="hljs-number">0x0cb61b38</span>L, <span class="hljs-number">0x92d28e9b</span>L,
+      <span class="hljs-number">0xe5d5be0d</span>L, <span class="hljs-number">0x7cdcefb7</span>L, <span class="hljs-number">0x0bdbdf21</span>L, <span class="hljs-number">0x86d3d2d4</span>L, <span class="hljs-number">0xf1d4e242</span>L,
+      <span class="hljs-number">0x68ddb3f8</span>L, <span class="hljs-number">0x1fda836e</span>L, <span class="hljs-number">0x81be16cd</span>L, <span class="hljs-number">0xf6b9265b</span>L, <span class="hljs-number">0x6fb077e1</span>L,
+      <span class="hljs-number">0x18b74777</span>L, <span class="hljs-number">0x88085ae6</span>L, <span class="hljs-number">0xff0f6a70</span>L, <span class="hljs-number">0x66063bca</span>L, <span class="hljs-number">0x11010b5c</span>L,
+      <span class="hljs-number">0x8f659eff</span>L, <span class="hljs-number">0xf862ae69</span>L, <span class="hljs-number">0x616bffd3</span>L, <span class="hljs-number">0x166ccf45</span>L, <span class="hljs-number">0xa00ae278</span>L,
+      <span class="hljs-number">0xd70dd2ee</span>L, <span class="hljs-number">0x4e048354</span>L, <span class="hljs-number">0x3903b3c2</span>L, <span class="hljs-number">0xa7672661</span>L, <span class="hljs-number">0xd06016f7</span>L,
+      <span class="hljs-number">0x4969474d</span>L, <span class="hljs-number">0x3e6e77db</span>L, <span class="hljs-number">0xaed16a4a</span>L, <span class="hljs-number">0xd9d65adc</span>L, <span class="hljs-number">0x40df0b66</span>L,
+      <span class="hljs-number">0x37d83bf0</span>L, <span class="hljs-number">0xa9bcae53</span>L, <span class="hljs-number">0xdebb9ec5</span>L, <span class="hljs-number">0x47b2cf7f</span>L, <span class="hljs-number">0x30b5ffe9</span>L,
+      <span class="hljs-number">0xbdbdf21c</span>L, <span class="hljs-number">0xcabac28a</span>L, <span class="hljs-number">0x53b39330</span>L, <span class="hljs-number">0x24b4a3a6</span>L, <span class="hljs-number">0xbad03605</span>L,
+      <span class="hljs-number">0xcdd70693</span>L, <span class="hljs-number">0x54de5729</span>L, <span class="hljs-number">0x23d967bf</span>L, <span class="hljs-number">0xb3667a2e</span>L, <span class="hljs-number">0xc4614ab8</span>L,
+      <span class="hljs-number">0x5d681b02</span>L, <span class="hljs-number">0x2a6f2b94</span>L, <span class="hljs-number">0xb40bbe37</span>L, <span class="hljs-number">0xc30c8ea1</span>L, <span class="hljs-number">0x5a05df1b</span>L,
+      <span class="hljs-number">0x2d02ef8d</span>L};
+
+<span class="hljs-comment">/* Return a 32-bit CRC of the contents of the buffer. */</span>
+
+static unsigned int crc32_accumulate(unsigned int crc32val, unsigned char *s, int len)
+{
+    int i;
+    for (i=<span class="hljs-number">0</span>; i&lt;len; i++) {
+        crc32val = crc32_tab[(crc32val ^ s[i]) &amp; <span class="hljs-number">0xff</span>] ^(crc32val &gt;&gt; <span class="hljs-number">8</span>);
+    }
+    return crc32val;
+}
+
+<span class="hljs-comment">/*crc32 ieee802 ,crc32 初始值为0xffffffff*/</span>
+unsigned int crc32(const unsigned char *s, int len)
+{
+  return (crc32_accumulate(<span class="hljs-number">0xffffffff</span>, s, len)^<span class="hljs-number">0xffffffff</span>);
+}
+<span class="hljs-comment">/*for big file crc32 check,crc32val init val must be 0x0*/</span>
+unsigned int xz_crc32(const unsigned char *s, int len,unsigned int crc32val)
+{
+  crc32val = ~crc32val;
+  return ~(crc32_accumulate(crc32val, s, len));
+}</code></pre>
+		</div>
+		<div><br />
+		</div>
+		<div>下面是验证函数
+		</div>
+		<div>
+			<div>
+				<pre style="padding: 8px;">
+<code><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#include</span> &lt;stdlib<span style=" font-weight:600; color:#4682b4;">.</span>h&gt;
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#include</span> &lt;stdio<span style=" font-weight:600; color:#4682b4;">.</span>h&gt;
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#include</span> &lt;<span style=" font-weight:600; color:#9400d3;">string</span><span style=" font-weight:600; color:#4682b4;">.</span>h&gt;
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#include</span> &lt;sys/types<span style=" font-weight:600; color:#4682b4;">.</span>h&gt;
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#include</span> &lt;sys/stat<span style=" font-weight:600; color:#4682b4;">.</span>h&gt;
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#include</span> &lt;fcntl<span style=" font-weight:600; color:#4682b4;">.</span>h&gt;
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#include</span> &lt;unistd<span style=" font-weight:600; color:#4682b4;">.</span>h&gt;
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#8b008b;">extern</span> <span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">int</span> crc32(<span style=" font-weight:600; color:#8b008b;">const</span> <span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">char</span> *s, <span style=" font-weight:600; color:#8b008b;">int</span> len);
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#8b008b;">extern</span> <span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">int</span> xz_crc32(<span style=" font-weight:600; color:#8b008b;">const</span> <span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">char</span> *s, <span style=" font-weight:600; color:#8b008b;">int</span> len,<span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">int</span> crcval);
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#8b008b;">int</span> main(<span style=" font-weight:600; color:#8b008b;">int</span> argc,<span style=" font-weight:600; color:#8b008b;">char</span> *argv[])
+</p><p style="margin:0px;">{
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">int</span> fd;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">int</span> fd_w;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">int</span> a=<span style=" font-weight:600; color:#4682b4;">0x12345678</span>;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">char</span> test_c = <span style=" font-weight:600; color:#4682b4;">0</span>;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">char</span> x0,x1,x2,x3;
+</p><p style="margin:0px;">        x0=((<span style=" font-weight:600; color:#8b008b;">char</span>*)&amp;a)[<span style=" font-weight:600; color:#4682b4;">0</span>]; <span style=" font-style:italic; color:#778899;">//低地址单元</span>
+</p><p style="margin:0px;">        x1=((<span style=" font-weight:600; color:#8b008b;">char</span>*)&amp;a)[<span style=" font-weight:600; color:#4682b4;">1</span>];
+</p><p style="margin:0px;">        x2=((<span style=" font-weight:600; color:#8b008b;">char</span>*)&amp;a)[<span style=" font-weight:600; color:#4682b4;">2</span>];
+</p><p style="margin:0px;">        x3=((<span style=" font-weight:600; color:#8b008b;">char</span>*)&amp;a)[<span style=" font-weight:600; color:#4682b4;">3</span>]; <span style=" font-style:italic; color:#778899;">//gao地址单元</span>
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">struct</span> stat filest;
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;">        printf(<span style=" font-weight:600; color:#2e8b57;">"%x %x %x %x\n"</span>,x0,x1,x2,x3);
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">if</span>(argc&lt;<span style=" font-weight:600; color:#4682b4;">2</span>){
+</p><p style="margin:0px;">                printf(<span style=" font-weight:600; color:#2e8b57;">"useage error!\n"</span>);
+</p><p style="margin:0px;">                <span style=" font-weight:600; color:#8b008b;">return</span> -<span style=" font-weight:600; color:#4682b4;">1</span>;
+</p><p style="margin:0px;">        }
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">if</span> ((fd = open(argv[<span style=" font-weight:600; color:#4682b4;">1</span>], O_RDONLY)) &lt; <span style=" font-weight:600; color:#4682b4;">0</span>) {
+</p><p style="margin:0px;">                printf(<span style=" font-weight:600; color:#2e8b57;">"open failed\n"</span>);
+</p><p style="margin:0px;">                <span style=" font-weight:600; color:#8b008b;">return</span> -<span style=" font-weight:600; color:#4682b4;">1</span>;
+</p><p style="margin:0px;">        }
+</p><p style="margin:0px;">        <span style=" font-style:italic; color:#778899;">//if ((fd_w = open("./lrz_test",  O_WRONLY | O_CREAT | O_TRUNC, 0644)) &lt; 0) {</span>
+</p><p style="margin:0px;">        <span style=" font-style:italic; color:#778899;">//}</span>
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">char</span> wri_txt[<span style=" font-weight:600; color:#4682b4;">32</span>]={<span style=" font-weight:600; color:#4682b4;">0</span>};
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">int</span> bytes = <span style=" font-weight:600; color:#4682b4;">0</span>;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">int</span> crcval = <span style=" font-weight:600; color:#4682b4;">0x0</span>;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">char</span> *fileContent;
+</p><p style="margin:0px;">        <span style=" font-weight:600; color:#8b008b;">if</span>(argc == <span style=" font-weight:600; color:#4682b4;">2</span>){
+</p><p style="margin:0px;">                <span style=" font-weight:600; color:#8b008b;">if</span> (stat(argv[<span style=" font-weight:600; color:#4682b4;">1</span>], &amp;filest) &gt;= <span style=" font-weight:600; color:#4682b4;">0</span>) {
+</p><p style="margin:0px;">                        fileContent = (<span style=" font-weight:600; color:#8b008b;">char</span> *)malloc(filest<span style=" font-weight:600; color:#4682b4;">.</span>st_size + <span style=" font-weight:600; color:#4682b4;">1</span>);
+</p><p style="margin:0px;">                        memset(fileContent, <span style=" font-weight:600; color:#2e8b57;">'\0'</span>, filest<span style=" font-weight:600; color:#4682b4;">.</span>st_size + <span style=" font-weight:600; color:#4682b4;">1</span>);
+</p><p style="margin:0px;">                        bytes = read(fd, fileContent, filest<span style=" font-weight:600; color:#4682b4;">.</span>st_size);
+</p><p style="margin:0px;">                        <span style=" font-weight:600; color:#8b008b;">if</span>(bytes &lt; (ssize_t)(filest<span style=" font-weight:600; color:#4682b4;">.</span>st_size)){
+</p><p style="margin:0px;">                                free(fileContent);
+</p><p style="margin:0px;">                                fileContent = NULL;
+</p><p style="margin:0px;">                                close(fd);
+</p><p style="margin:0px;">                                <span style=" font-weight:600; color:#8b008b;">return</span> -<span style=" font-weight:600; color:#4682b4;">1</span>;
+</p><p style="margin:0px;">                        }
+</p><p style="margin:0px;">                        printf(<span style=" font-weight:600; color:#2e8b57;">"crc32=%x\n"</span>, crc32(fileContent, filest<span style=" font-weight:600; color:#4682b4;">.</span>st_size));
+</p><p style="margin:0px;">                        printf(<span style=" font-weight:600; color:#2e8b57;">"crc32 img=%x\n"</span>, xz_crc32(fileContent, filest<span style=" font-weight:600; color:#4682b4;">.</span>st_size, crcval));
+</p><p style="margin:0px;">                        <span style=" font-style:italic; color:#778899;">//system("crc32 ");</span>
+</p><p style="margin:0px;">                }
+</p><p style="margin:0px;">        }<span style=" font-weight:600; color:#8b008b;">else</span> <span style=" font-weight:600; color:#8b008b;">if</span>(argc == <span style=" font-weight:600; color:#4682b4;">3</span>){
+</p><p style="margin:0px;">                <span style=" font-weight:600; color:#8b008b;">while</span>( (bytes = read(fd, &amp;wri_txt, <span style=" font-weight:600; color:#4682b4;">32</span>)) &gt; <span style=" font-weight:600; color:#4682b4;">0</span>){
+</p><p style="margin:0px;">                        <span style=" font-style:italic; color:#778899;">//      printf("wri_txt=%s,",wri_txt);</span>
+</p><p style="margin:0px;">                        crcval = xz_crc32(wri_txt, bytes,crcval);
+</p><p style="margin:0px;">                }
+</p><p style="margin:0px;">                printf(<span style=" font-weight:600; color:#2e8b57;">"crc32_img=%x\n"</span>,crcval);
+</p><p style="margin:0px;">        }
+</p></code><p style="margin:0px;"><code>}</code></p></pre>
+			</div>
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

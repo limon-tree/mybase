@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div>makefile 不能以空格键缩进,必须以Tab键缩进
+			</div>
+			<div><br />
+			</div>
+			<div>makefile $(if &lt;condition&gt;,&lt;then-part&gt; ) or $(if &lt;condition&gt;,&lt;then-part&gt;,&lt;else-part&gt; )
+			</div>
+			<div>#如果&lt;condition&gt;为真(非空字符串),&lt;then-part&gt;为整个函数的返回值
+			</div>
+			<div>#如果&lt;condition&gt;为假(空字符串),&lt;else-part&gt;为整个函数的返回值,如果此时&lt;else-part&gt;未定义,那么整个函数返回空字符串
+			</div>
+			<div><br />
+			</div>
+			<div>makefile $(filter $(condition),$(src))
+			</div>
+			<div>过滤语句,过滤掉不符合指定模式的内容,如$(filter 1 2 3,$(src)) src= 1 2 3 4 5 结果是1 2 3
+			</div>
+			<div>常用$(filter %.c %.s,$(src)) 如src := a.s b.c c.cpp 结果是 a.s b.c
+			</div>
+			<div><br />
+			</div>
+			<div>$(strip $(var)) 去空字符串,去掉字串中开头和结尾的空字符
+			</div>
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

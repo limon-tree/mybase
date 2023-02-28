@@ -1,0 +1,499 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<pre>
+<code id="ID_1746CC1F97E" class="hljs dsconfig"><div><font class="Apple-style-span" color="#000000" face="'Times New Roman'"><span class="Apple-style-span" style="white-space: normal;"><br></span></font></div></code></pre>
+			<div><br />
+			</div>
+		</div>
+		<div>
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div><span style="font-size: 18pt"><strong>last. 编译遇到的问题</strong></span>
+		</div>
+		<div><br />
+		</div>
+		<div>编译 vmdx文件，需要用qemu 转下格式
+		</div>
+		<div>
+			<div>qemu-img convert -f raw -O vmdk /home/forlinx/work/nxp-wrt/bin/targets/x86/generic-glibc/lede-x86-generic-combined-squashfs.img /home/forlinx/work/nxp-wrt/bin/targets/x86/generic-glibc/lede-x86-generic-combined-squashfs.vmdk
+			</div>
+		</div>
+		<div><br />
+		</div>
+		<div><span style="font-size: x-large;">https://mirror.netcologne.de/savannah/qemu/qemu-0.14.1.tar.gz</span>
+		</div>
+		<div><span style="font-size: 18pt"><br /></span>
+		</div>
+		<div>
+		</div>
+		<div><span style="font-size: x-large;">need yasm-1.3.0.tar.gz</span>
+		</div>
+		<div>
+			<div style="font-size: x-large; ">http://downloads.openwrt.org/sources/yasm-1.3.0.tar.gz
+			</div>
+			<div style="font-size: x-large; ">http://sources.lede-project.org/grub-2.02.tar.xz
+			</div>
+			<div style="font-size: x-large; ">
+				<div>
+					<div>
+						<div>http://mirror2.openwrt.org/sources/odhcp6c-2017-09-05-51733a6d.tar.xz
+						</div>
+						<div>
+							<div>http://mirror2.openwrt.org/sources/f2fs-tools-1.9.0.tar.gz
+							</div>
+							<div><br />
+							</div>
+						</div>
+						<div><br />
+						</div>
+						<div>21.05
+						</div>
+					</div>
+				</div>
+				<div>
+					<div>https://mirror2.openwrt.org/sources/f2fs-tools-1.13.0.tar.gz
+					</div>
+				</div>
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div>
+				<div style="font-size: x-large; "><br />
+				</div>
+				<div><span style="font-size: 18pt"><span style="font-weight: bold; ">4.4 Lighttpd</span>测试</span>
+				</div>
+				<div><span style="font-size: 13.5pt">本节将详细介绍如何将OK1043A-C平台打造成一个专属的家庭私有云平台，利用lighttpd+php 作为后台服务，PHP页面采用KODExplorer 可道云(原名芒果云) 是一款基于PHP 开发的开源WEB 网页版轻量级私有云网盘工具。而且KODExplorer 还提供了手机版(移动端) 的适配支持，即便出门在外也能随时用手机远程访问和使用自己在网盘上的文件，这点值得一赞。</span>
+				</div>
+				<div><span style="font-size: 13.5pt">注意：KODExplorer 目前分为多个版本，本节采用的是免费版，下载链接如有更新请到可道云官网下载页面获取，如有客户需要采用KODExplorer方案进行商用请联系可道云进行授权。</span>
+				</div>
+				<div><span style="font-size: 13.5pt">root@localhost:~# mkdir /var/www/html -p </span>
+				</div>
+				<div><span style="font-size: 13.5pt">下载可道云： </span>
+				</div>
+				<div><span style="font-size: 13.5pt">root@localhost:~# cd /var/www/html/ </span>
+				</div>
+				<div><span style="font-size: 13.5pt">root@localhost:~# wget http://static.kodcloud.com/update/download/kodexplorer4.37.zip </span>
+				</div>
+				<div><span style="font-size: 13.5pt">root@localhost:~# unzip kodexplorer4.37.zip </span>
+				</div>
+				<div><span style="font-size: 13.5pt">root@localhost:~# chown -R www-data:www-data /var/www/html </span>
+				</div>
+				<div><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div><span style="font-size: 18pt"><strong>移植tree</strong></span>
+				</div>
+				<div style="line-height: 100%"><span style="font-size: 18pt"><strong><br /></strong></span>
+				</div>
+				<div><span style="font-size: 13.5pt">tar -zxvf tree-1.7.0.tgz</span>
+				</div>
+				<div><span style="font-size: 13.5pt">make CC=/home/forlinx/work/OK104x-linux-openwrt/staging_dir/toolchain-i386_pentium4_gcc-5.5.0_musl/bin/i486-openwrt-linux-musl-gcc&nbsp;</span>
+				</div>
+				<div><span style="font-size: 13.5pt">
+					<div>file tree
+					</div>
+					<div>tree: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-musl-i386.so.1, with debug_info, not stripped
+					</div></span>
+				</div>
+				<div><span style="font-size: 13.5pt">//因为</span>
+				</div>
+				<div><span style="font-size: 13.5pt">chmod +x tree</span>
+				</div>
+				<div><span style="font-size: large; ">cp tree&nbsp; /usr/bin/</span>
+				</div>
+				<div><span style="font-size: large; "><br /></span>
+				</div>
+				<div><span style="font-size: large; "><br /></span>
+				</div>
+				<div><span style="font-size: large; ">
+					<div>
+						<pre>
+<code id="ID_17E488F1DD0" class="hljs gradle">make <span class="hljs-keyword">package</span><span class="hljs-regexp">/feeds/</span>oui<span class="hljs-regexp">/oui-ui/</span><span class="hljs-keyword">compile</span> V=s
+make <span class="hljs-keyword">package</span><span class="hljs-regexp">/feeds/</span>oui<span class="hljs-regexp">/oui-ui-core/</span><span class="hljs-keyword">compile</span> V=s
+
+make <span class="hljs-keyword">package</span><span class="hljs-regexp">/feeds/</span>packages<span class="hljs-regexp">/ttyd/</span><span class="hljs-keyword">compile</span> V=s
+make <span class="hljs-keyword">package</span><span class="hljs-regexp">/feeds/</span>packages<span class="hljs-regexp">/ttyd/</span>clean V=s
+make <span class="hljs-keyword">package</span><span class="hljs-regexp">/feeds/</span>packages<span class="hljs-regexp">/libwebsockets/</span><span class="hljs-keyword">compile</span> V=s | tee <span class="hljs-number">1</span>.log</code><code id="ID_17E488F1DD0" class="hljs gradle">make ./feeds/packages/net/frr/compile V=s</code><code id="ID_17E488F1DD0" class="hljs gradle">make clean 清除clean目录</code><code id="ID_17E488F1DD0" class="hljs gradle">make dirclean 清除所有,包括下载的软件包,配置文件,feel内容 <span class="Apple-style-span" style="background-color: rgb(255, 255, 0);">慎用</span></code><code id="ID_17E488F1DD0" class="hljs gradle"><br></code></pre>
+					</div></span>
+				</div>
+				<div><span style="font-size: 13.5pt">&nbsp;vi ./feeds/luci/modules/luci-base/luasrc/dispatcher.lua&emsp;local scope = { duser = &quot;admin&quot;, fuser = user }</span>
+				</div>
+				<div><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div><span style="font-size: 13.5pt">dev name</span>
+				</div>
+				<div>
+					<div style="font-family: 宋体; "><span style="color: rgb(170, 51, 170); font-family: Consolas; ">package/base-files/files/sbin/restore_default_cfg</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="color: rgb(9, 118, 72); font-family: Consolas; ">36</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="font-family: Consolas; ">elif [ &quot;$dev&quot; = &quot;</span><span style="color: rgb(170, 85, 85); font-family: Consolas; ">iHSHN-200</span><span style="font-family: Consolas; ">&quot; ];then</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="color: rgb(170, 51, 170); font-family: Consolas; ">package/base-files/files/sbin/restore_default_cfg</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="color: rgb(9, 118, 72); font-family: Consolas; ">37</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="font-family: Consolas; "> &nbsp; sysupgrade -r /usr/default</span><span style="color: rgb(170, 85, 85); font-family: Consolas; ">iHSHN-200</span><span style="font-family: Consolas; ">.tgz</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="color: rgb(170, 51, 170); font-family: Consolas; ">package/base-files/files/etc/init.d/edps_yc</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="color: rgb(9, 118, 72); font-family: Consolas; ">22</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="font-family: Consolas; "> if [ &quot;$dev&quot; = &quot;</span><span style="color: rgb(170, 85, 85); font-family: Consolas; ">iHSHN-200</span><span style="font-family: Consolas; ">&quot; ];then</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="color: rgb(170, 51, 170); font-family: Consolas; ">package/base-files/files/etc/init.d/fmc</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="color: rgb(9, 118, 72); font-family: Consolas; ">14</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="font-family: Consolas; "> &nbsp; &nbsp; elif [ &quot;$dev&quot; = &quot;</span><span style="color: rgb(170, 85, 85); font-family: Consolas; ">iHSHN-200</span><span style="font-family: Consolas; ">&quot; ];then</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="color: rgb(170, 51, 170); font-family: Consolas; ">package/base-files/files/bin/config_generate</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="color: rgb(9, 118, 72); font-family: Consolas; ">90</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="font-family: Consolas; "> &nbsp; &nbsp; &nbsp; &nbsp;if [ &quot;${devname}&quot; = &quot;</span><span style="color: rgb(170, 85, 85); font-family: Consolas; ">iHSHN-200</span><span style="font-family: Consolas; ">&quot; ];then</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="color: rgb(170, 51, 170); font-family: Consolas; ">package/base-files/files/bin/config_generate</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="color: rgb(9, 118, 72); font-family: Consolas; ">256</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="font-family: Consolas; ">devname=</span><span style="color: rgb(170, 85, 85); font-family: Consolas; ">iHSHN-200</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="color: rgb(170, 51, 170); font-family: Consolas; ">build.sh</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="color: rgb(9, 118, 72); font-family: Consolas; ">16</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="font-family: Consolas; "># &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: rgb(170, 85, 85); font-family: Consolas; ">iHSHN-200</span><span style="font-family: Consolas; ">--R0001-Bulid-1.0.1.4</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="color: rgb(170, 51, 170); font-family: Consolas; ">build.sh</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="color: rgb(9, 118, 72); font-family: Consolas; ">138</span><span style="color: rgb(56, 136, 159); font-family: Consolas; ">:</span><span style="font-family: Consolas; "> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sed -i &apos;s/devname=.*/devname=</span><span style="color: rgb(170, 85, 85); font-family: Consolas; ">iHSHN-200</span><span style="font-family: Consolas; ">/&apos; $syspath/bin/config_generate</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="font-family: Consolas; color: rgb(170, 51, 170); ">build.sh</span><span style="font-family: Consolas; color: rgb(56, 136, 159); ">:</span><span style="font-family: Consolas; color: rgb(9, 118, 72); ">139</span><span style="font-family: Consolas; color: rgb(56, 136, 159); ">:</span><span style="font-family: Consolas; "> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sed -i &apos;s/RELEASE=.*/RELEASE=</span><span style="font-family: Consolas; color: rgb(170, 85, 85); ">iHSHN-200</span><span style="font-family: Consolas; ">/&apos; ./include/ky_version.mk</span>
+					</div>
+					<div style="font-family: 宋体; "><span style="font-family: Consolas; "><br /></span>
+					</div>
+					<div style="font-family: 宋体; "><span style="font-family: Consolas; ">
+						<div>./package/base-files/files/bin/config_generate:256:devname=Limon &nbsp; &nbsp;改为Limon
+						</div>
+						<div><br />
+						</div></span>
+					</div>
+					<div><span style="font-size: 13.5pt"><br /></span>
+					</div>
+					<div><span style="font-size: 13.5pt">//ttyd 编译问题</span>
+					</div>
+					<div>
+						<div><span style="font-size: 13.5pt">~/work/wrt21.05/build_dir/target-i386_pentium4_glibc/ttyd-1.6.1 vi CMakelist.txt &nbsp;add dl</span>
+						</div>
+					</div>
+					<div><span style="font-size: 13.5pt"><br /></span>
+					</div>
+					<div><span style="font-size: 13.5pt"><br /></span>
+					</div>
+				</div>
+				<div><span style="font-size: 13.5pt">//sync add img</span>
+				</div>
+				<div><span style="font-size: 13.5pt">
+					<pre>
+<code id="ID_17E4BDC35E0" class="hljs applescript">&lt;<span class="hljs-keyword">div</span> <span class="hljs-built_in">id</span>=<span class="hljs-string">"sigImageflag"</span>&gt;                   
+    &lt;<span class="hljs-keyword">div</span> <span class="hljs-built_in">class</span>=<span class="hljs-string">"sigImage"</span>&gt;
+        &lt;img width=<span class="hljs-string">"23"</span> height=<span class="hljs-string">"23"</span> src=<span class="hljs-string">"/luci-static/resources/icons/signal-none.png"</span> onchange=<span class="hljs-string">""</span> <span class="hljs-built_in">class</span>=<span class="hljs-string">"sigImage"</span> <span class="hljs-built_in">id</span>=<span class="hljs-string">"sigImage1"</span> /&gt;
+        &lt;span  <span class="hljs-built_in">class</span> = <span class="hljs-string">"test"</span>  &gt;&lt;/span&gt;
+    &lt;/<span class="hljs-keyword">div</span>&gt;
+&lt;/<span class="hljs-keyword">div</span>&gt;
+imgsrc=<span class="hljs-string">"/luci-static/resources/icons/"</span>+imgsrc+<span class="hljs-string">".png"</span>
+$(<span class="hljs-string">"#sigImage1"</span>).attr(<span class="hljs-string">"src"</span>,imgsrc);</code></pre></span>
+				</div>
+				<div>
+				</div>
+			</div>
+			<div><span style="font-size: 13.5pt"></span>
+			</div>
+			<div style="font-size: x-large; ">5gstatus 显示
+			</div>
+			<div style="font-size: x-large; ">
+				<pre>
+<code id="ID_17E4C381A5E" class="hljs lua"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">action_LinkType</span><span class="hljs-params">()</span></span>
+        <span class="hljs-keyword">local</span> resul1= <span class="hljs-built_in">io</span>.<span class="hljs-built_in">popen</span>(<span class="hljs-string">"cat /tmp/5gstatus /tmp/5gid"</span>,<span class="hljs-string">'r'</span>)
+        <span class="hljs-keyword">local</span> data1 =resul1:<span class="hljs-built_in">read</span>(<span class="hljs-string">"*a"</span>)
+        <span class="hljs-keyword">local</span> resul2,err= <span class="hljs-built_in">io</span>.<span class="hljs-built_in">open</span>(<span class="hljs-string">"/tmp/5gstatus"</span>)
+        resul1:<span class="hljs-built_in">close</span>()
+        <span class="hljs-keyword">if</span> err <span class="hljs-keyword">then</span>
+                data1 = <span class="hljs-string">"off"</span>
+        <span class="hljs-keyword">end</span>
+        luci.http.prepare_content(<span class="hljs-string">"application/json"</span>)
+        luci.http.write_json({gg=data1})
+</code><code id="ID_17E4C381A5E" class="hljs lua">vi /tmp/5gstatus</code><code id="ID_17E4C381A5E" class="hljs lua">./5Gstate.sh &gt;/tmp/5gstatus</code></pre>
+			</div>
+			<div>
+				<div><span style="font-size: 10pt">sim current slot:333</span>
+				</div>
+				<div><span style="font-size: 10pt">----------------------------------------------------------------------</span>
+				</div>
+				<div><span style="font-size: 10pt"><br /></span>
+				</div>
+				<div><span style="font-size: 10pt">----------------------------------------------------------------------</span>
+				</div>
+				<div><span style="font-size: 10pt"><br /></span>
+				</div>
+				<div><span style="font-size: 10pt">sim IMSI:444</span>
+				</div>
+				<div><span style="font-size: 10pt">----------------------------------------------------------------------</span>
+				</div>
+				<div><span style="font-size: 10pt"><br /></span>
+				</div>
+				<div><span style="font-size: 10pt">current operatos:555</span>
+				</div>
+				<div><span style="font-size: 10pt">----------------------------------------------------------------------</span>
+				</div>
+				<div><span style="font-size: 10pt"><br /></span>
+				</div>
+				<div><span style="font-size: 10pt">----------------------------------------------------------------------</span>
+				</div>
+				<div><span style="font-size: 10pt"><br /></span>
+				</div>
+				<div><span style="font-size: 10pt">LTE 4G:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; connect cell:666LTE</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; connect state:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; connect network:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; duplex mod:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; Mobile Country Code:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; Mobile Network Code:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; Cell ID:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; Physical cell ID:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; E-UTRA-ARFCN&lt;EARFCN&gt;:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; E-UTRA frequency band&lt;band&gt;:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; UL bandwidth:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; DL bandwidth:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; Tracking Area Code&lt;TAC&gt;:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; signal(-140 to -44dBm) &lt;RSRP&gt;:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; signal(-20 to -3dB) &lt;RSRQ&gt;:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; LTE Received Signal Strength &lt;RSSI&gt;:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; plus Noise Ratio,Range: -20 to 30 dB &lt;SINR&gt;:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; Channel Quality(1 to 30)&lt;CQI&gt;:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; the maximum of all UL channel TX power:</span>
+				</div>
+				<div><span style="font-size: 10pt">&nbsp; Suitable reception level for inter frequency cell:</span>
+				</div>
+			</div>
+			<div style="font-size: x-large; ">温度显示
+			</div>
+			<div><span style="font-size: 13.5pt">find / -name &quot;*.lua&quot; | xargs grep -rn &quot;temper&quot;</span>
+			</div>
+			<div><span style="font-size: 13.5pt">&nbsp;vi /usr/lib/lua/luci/controller/admin/index.lua +35</span>
+			</div>
+			<div><span style="font-size: 13.5pt">使用一个假的值</span>
+			</div>
+			<div><span style="font-size: 13.5pt">
+				<div>root@Lemon:~# cat /usr/sbin/ky_temper
+				</div>
+				<div>#!/bin/sh
+				</div>
+				<div><br />
+				</div>
+				<div>TMP=`date +%s%N | cut -c10`
+				</div>
+				<div>echo &quot;temp=56.$TMP&quot;
+				</div>
+				<div><br />
+				</div></span>
+			</div>
+			<div style="font-size: x-large; ">add vty-sh
+			</div>
+			<div style="font-size: x-large; ">configure: error: libyang (&gt;= 1.0.184) was not found on your system.
+			</div>
+			<div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">//libyang 编译问题</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">/home/forlinx/work/wrt21.05/build_dir/target-i386_pentium4_glibc/libyang-1.0.184/ipkg-install/usr/lib/</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">ln -s libyang1 libyang</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">add vrrpd</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">/etc/frr/daemons</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">vrrpd=yes</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">ip link add vrrpv4-2-1 link br-lan type macvlan mode bridge</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">ip link set dev vrrpv4-2-1 address 00:00:5e:00:01:05</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">ip addr add 192.168.1.100/24 dev vrrpv4-2-1</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">ip link set dev vrrpv4-2-1 up</span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt">
+					<div style="font-size: x-large; "><span style="font-size: 13.5pt">ip link add vrrpv6-2-1 link br-lan type macvlan mode bridge</span>
+					</div>
+					<div style="font-size: x-large; "><span style="font-size: 13.5pt">ip link set dev vrrpv6-2-1 address 00:00:5e:00:02:05</span>
+					</div>
+					<div style="font-size: x-large; "><span style="font-size: 13.5pt">ip addr add 2001:db8::370:7334/64 dev vrrpv6-2-1</span>
+					</div>
+					<div style="font-size: x-large; "><span style="font-size: 13.5pt">ip link set dev vrrpv6-2-1 up</span>
+					</div></span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div style="font-size: x-large; "><span style="font-size: 13.5pt"><br /></span>
+				</div>
+				<div>
+					<div><span style="font-size: 13.5pt"><br /></span>
+					</div>
+				</div>
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; ">./feeds/luci/applications/luci-app-ttyd
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; ">tar -Jcvf wrt21.05.tar.xz --exclude=wrt21.05/bin --exclude=wrt21.05/build_dir --exclude=wrt21.05/staging_dir wrt21.05
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div><strong><span style="font-size: 18pt">add 可道云,参考 luci-app-ttyd</span></strong>
+			</div>
+			<div style="font-size: x-large; ">luci-app-kodexplorer.rar
+			</div>
+			<div style="font-size: x-large; ">```
+			</div>
+			<div style="font-size: x-large; ">
+				<div>/package/feeds/luci$ ls luci-*ttyd -hl
+				</div>
+				<div>lrwxrwxrwx 1 forlinx forlinx 46 Dec 20&nbsp; 2021 luci-app-ttyd -&gt; ../../../feeds/luci/applicati-app-ttyd
+				</div>
+				<div><br />
+				</div>
+				<div>mine
+				</div>
+				<div>cd&nbsp;~/work/wrt21.05/feeds/luci/applications
+				</div>
+				<div>tar&nbsp;luci-app-kodexplorer.rar at here
+				</div>
+				<div>ln -s ../../../feeds/luci/applications/luci-app-kodexplorer luci-app-kodexplorer
+				</div>
+				<div><br />
+				</div>
+				<div>
+					<div>ls luci-*kod* -hl
+					</div>
+					<div>lrwxrwxrwx 1 forlinx forlinx 53 Aug 12 09:51 luci-app-kodexplorer -&gt; ../../../feeds/luci/applications/luci-app-kodexplorer
+					</div>
+					<div>nginx开启错误日志,/tmp/etc/kodexplorer
+					</div>
+					<div>error_log /var/nginx.log debug;
+					</div>
+				</div>
+				<div><br />
+				</div>
+				<div><br />
+				</div>
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+			<div style="font-size: x-large; "><br />
+			</div>
+		</div>
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

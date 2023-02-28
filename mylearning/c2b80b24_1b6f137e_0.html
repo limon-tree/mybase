@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(一)：我们来动手吧！
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-04-28 13:25
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：2013、2014年，智能路由产品层出不穷，从极路由到如意云、从360安全路由到小米“智能家居”路由；在此之前，许多创客玩家们也都有尝试在开发板上自己制造出一台路由器。究竟一台智能路由是如何做出来的呢？我们是否可以在众多开源组件的基础上自己来构建一台智能路由？
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">2013、2014年，智能路由产品层出不穷，从极路由到如意云、从360安全路由到小米“智能家居”路由；在此之前，许多创客玩家们也都有尝试在开发板上自己制造出一台路由器。究竟一台智能路由是如何做出来的呢？我们是否可以在众多开源组件的基础上自己来构建一台智能路由？
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">雷锋网<span style="color: rgb(253, 93, 60);">(公众号：雷锋网)</span>在此携手硬件达人hoowa sun(孙冰)，以切身实践来为大家解密。在本次实践活动中，hoowa将把自己在DIY智能路由的实践以文章形式发布在雷锋网上，我们的读者小伙伴们可以在文章下评论交流，让我们一起来打造一台智能路由器吧！
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">什么是智能路由？
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">要说什么是智能路由，一定要从功能路由说起。我们传统的、包括市面上现在最容易购买到的路由器我们普遍称呼为功能路由，这些路由器的功能是固定的为了满足不同用户而设计的产品。而智能路由是采用了更高性能的CPU和更大的RAM所实现的类似Android这样的全功能操作系统环境。而智能路由的概念是从2013年初逐步的普及到市场，目前智能路由市场已经包括有：极路由，小米路由，果壳路由等多家互联网公司加入。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">hoowa认为，各大厂家目前瞄准的市场是“占领用户的客厅”，但智能路由的市场远远没有真正的来到春天，现在来说，还是一种鱼龙混杂，诸侯割据的年代。首先芯片厂家并没有为此做好硬件的准备，互联网公司只是盲目的进入了这个领域，随便搞个网址过滤也都号称智能路由，智能个卵子哦，缺乏真正对用户有价值的内容。而掌握有价值内容的公司，由于尚没有了解怎样保护自己的利益情况下进入这个领域，也大部分都在观望。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">另外，有一个市场&quot;智能家居&quot;也近两年逐渐的被互联网公司“相中”，目前普遍市场认为，智能家居的中控中心也是应以智能路由所用的基础架构进行设计，这样才利于成本的降低。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">讲解形式
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">教程每章结束后，在后一篇教程发布之前读者可以提出问题，问题可通过在雷锋网发布文章下评论、公众号「宅客」：<span style="color: rgb(255, 0, 0);">letshome</span>、QQ群：<span style="color: rgb(255, 0, 0);">196302618&nbsp;</span>三种方式提交给hoowa互动解答。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">章节设置：</strong>
+							</p>
+							<ul style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: disc;">第一章 前言
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">第二章 从芯片开始了解路由器
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">第三章 准备工作
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">第四章 第一次刷机
+								</li>
+							</ul>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">之后章节，将根据各位喜好及hoowa能力，每周动态公布。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">本教程适合的读者
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本教程的讲解内容将以软件的调试，安装，部署，架构为主。尽量少接触到与硬件相关性的东西。我们的教程不是教大家怎么学嵌入式，而恰恰是为了让您以更小的代价去进入到智能路由领域。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本教程适合有以下基础之人员：
+							</p>
+							<ol style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">具备Linux操作基础
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">具备Linux Shell基础
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">互联网从业人员，或是智能路由爱好者
+								</li>
+							</ol>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">作者介绍
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本教程作者hoowa sun(孙冰)是一位从事了16年IT行业工作的80后程序员，亲眼见证了中国互联网和IT领域的最辉煌的十几年发展，从事过多种不同的领域和工作，现在所任职一家专门针对企业市场提供智能路由产品的公司。其在2012年开始因项目需要开始从事智能路由相关产品的研发设计工作。其也曾多年从事开源运动推广工作。长期活跃在智能电子设备，VOIP，Perl/Linux领域当中，人送绰号：飞云，葫芦娃，火娃。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">作者声明
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本教程作为hoowa，作者保留本教程的著作权及所有权，未经作者同意严禁转载部分或全部内容。本教程以免费的形式赠与大家阅读，严禁任何组织和个人以本教程收费形式转发给第三方。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">由于hoowa在这个领域也是新人，难免教程中存在很多遗漏和错误的地方，如果有这方面的问题，请大家给予指出。如果是完美主义者请勿阅读本文，因此造成干呕鲜血，作者无力承担责任。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">感谢以下单位和个人对本教程的支持：雷锋网，雷科技，Chinaunix，深圳方位电子，成都立方体科技，深圳快联讯科技，台山仔， crise，Matthew，lixinming913，Y.K，雄盛(小邱)。
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

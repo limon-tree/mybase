@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="postTitle" style="font-weight: bold; margin-bottom: 10px; color: rgb(75, 75, 75); font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-style: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "><a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/huaping-audio/archive/2009/06/19/1506898.html" style="text-decoration: none; color: rgb(67, 113, 166); "><span role="heading" aria-level="2" style="line-height: 22.05px; vertical-align: middle; font-size: large;">用GDB Server进行远程调试</span></a>
+			</div>
+			<div id="cnblogs_post_body" class="blogpost-body blogpost-body-html" style="margin-bottom: 20px; word-break: break-word; color: rgb(75, 75, 75); font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-style: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; ">
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">某些时候由于模拟环境的限制，调试必须要在目标板上进行。由于<strong>嵌入式系统</strong>资源比较有限，一般不能在目标板上直接构建GDB的调试环境，这时我们通常采用gdb+gdbserver的远程调试方法：gdbserver在目标板中运行，而gdb则在主机上运行。</span>
+				</p>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">构建gdb+gdbserver调试环境的在于，要将gdb和gdbserver都编译成适用于目标板的版本。比如我们用x86的主机和<strong>ARM</strong>目标板，平时在主机上直接调试的时候都使用用于x86调试的gdb，但这个gdb不能用于远程调试中，需要针对<strong>ARM</strong>平台进行配置之后重新编译才行；而gdbserver要运行在目标板上，则需要用arm-linux-gcc编译才行。</span>
+				</p>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">我们可以从<a href="http://ftp.gnu.org/gnu/gdb/" rel="noopener" style="color: rgb(67, 113, 166);">http://ftp.gnu.org/gnu/gdb/</a><span>&nbsp;</span>或其他站点下载GDB的源代码来进行编译。得到源代码包gdb-6.6.tar.gz之后，将target配置成arm-<strong>linux</strong>，然后进行编译：</span>
+				</p>
+				<div class="table-wrapper" style="display: block; overflow-x: auto; ">
+					<table cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; word-break: break-word; background: rgb(179, 179, 179);">
+						<tbody>
+							<tr>
+								<td valign="top" width="568" style="line-height: 18px; border-top-color: rgb(212, 208, 200); border-right-color: rgb(212, 208, 200); border-bottom-color: rgb(212, 208, 200); border-left-color: rgb(212, 208, 200); border-width: initial; border-style: initial; border-collapse: collapse; padding-top: 0px; padding-right: 5.4pt; padding-bottom: 0px; padding-left: 5.4pt; min-width: 50px; width: 426.1pt; background-color: rgba(0, 0, 0, 0); ">
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ tar xzvf gdb-6.6.tar.gz</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ cd gdb-6.6</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ ./configure --target=arm-linux</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ make</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ make install</span>
+									</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">注意这时我们编译的是用于主机上的gdb程序，因此仍然用x86版本的gcc编译，而不是用arm-gcc。而接下来我们要编译的gdbserver程序则是运行在目标板上的，需要用arm-gcc来编译了，用CC=&lt;your_arm-linux-gcc_path&gt;来指定arm-linux-gcc编译器：</span>
+				</p>
+				<div class="table-wrapper" style="display: block; overflow-x: auto; ">
+					<table cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; word-break: break-word; background: rgb(179, 179, 179);">
+						<tbody>
+							<tr>
+								<td valign="top" width="568" style="line-height: 18px; border-top-color: rgb(212, 208, 200); border-right-color: rgb(212, 208, 200); border-bottom-color: rgb(212, 208, 200); border-left-color: rgb(212, 208, 200); border-width: initial; border-style: initial; border-collapse: collapse; padding-top: 0px; padding-right: 5.4pt; padding-bottom: 0px; padding-left: 5.4pt; min-width: 50px; width: 426.1pt; background-color: rgba(0, 0, 0, 0); ">
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ cd gdb/gdbserver/</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ ./configure --target=arm-linux --host=arm-linux</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ make CC=/opt/toolchain/bin/arm-linux-gcc</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ make install</span>
+									</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">得到gdb和gdbserver之后，将gdbserver下载到目标板上就可以进行远程调试了。我们还是以前面用过的overflow程序为例来说明，注意overflow程序也需要重新用arm-linux-gcc编译得到<strong>ARM</strong>版本的overflow程序，并下载到目标板上。</span>
+				</p>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">完成这些之后可以用file命令来检查所准备gdb和gdbserver及overflow程序的格式是否正确：</span>
+				</p>
+				<div class="table-wrapper" style="display: block; overflow-x: auto; ">
+					<table cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; word-break: break-word; background: rgb(179, 179, 179);">
+						<tbody>
+							<tr>
+								<td valign="top" width="568" style="line-height: 18px; border-top-color: rgb(212, 208, 200); border-right-color: rgb(212, 208, 200); border-bottom-color: rgb(212, 208, 200); border-left-color: rgb(212, 208, 200); border-width: initial; border-style: initial; border-collapse: collapse; padding-top: 0px; padding-right: 5.4pt; padding-bottom: 0px; padding-left: 5.4pt; min-width: 50px; width: 426.1pt; background-color: rgba(0, 0, 0, 0); ">
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ file arm-linux-gdb</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">arm-linux-gdb: ELF 32-bit LSB executable,<span>&nbsp;</span><strong>Intel 80386</strong>, version 1 (SYSV), for GNU/Linux 2.4.17, dynamically linked (uses shared libs), not stripped</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ file overflow</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">overflow: ELF 32-bit LSB executable,<span>&nbsp;</span><strong>ARM</strong>, version 1 (SYSV), for GNU/Linux 2.4.17, dynamically linked (uses shared libs), not stripped</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ file gdbserver</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">gdbserver: ELF 32-bit LSB executable,<span>&nbsp;</span><strong>ARM</strong>, version 1 (SYSV), for GNU/Linux 2.4.17, dynamically linked (uses shared libs), not stripped</span>
+									</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">注意确保在目标板上运行的gdbserver及overflow程序被编译成<strong>ARM</strong><span>&nbsp;</span>ELF格式，而gdb由于是运行在主机上，还是x86格式的。</span>
+				</p>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">gdb和gdbserver之间可以通过TCP(格式为host:port)、UDP(格式为udp: host:port)或者串口（比如/dev/ttyb）来通信，我们以TCP方式为例来说明。</span>
+				</p>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">假设目标板的IP为192.168.2.1，主机为192.168.2.100，使用端口5678来调试，首先在目标板上运行gdbserver：</span>
+				</p>
+				<div class="table-wrapper" style="display: block; overflow-x: auto; ">
+					<table cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; word-break: break-word; background: rgb(179, 179, 179);">
+						<tbody>
+							<tr>
+								<td valign="top" width="568" style="line-height: 18px; border-top-color: rgb(212, 208, 200); border-right-color: rgb(212, 208, 200); border-bottom-color: rgb(212, 208, 200); border-left-color: rgb(212, 208, 200); border-width: initial; border-style: initial; border-collapse: collapse; padding-top: 0px; padding-right: 5.4pt; padding-bottom: 0px; padding-left: 5.4pt; min-width: 50px; width: 426.1pt; background-color: rgba(0, 0, 0, 0); ">
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;"># gdbserver 192.168.16.1:5678 ./overflow</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">Process ./overflow created; pid = 618</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">Listening on port 5678</span>
+									</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">然后在主机上运行gdb，并运行gdb命令“target remote 192.168.2.1:5678”：</span>
+				</p>
+				<div class="table-wrapper" style="display: block; overflow-x: auto; ">
+					<table cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; word-break: break-word; background: rgb(179, 179, 179);">
+						<tbody>
+							<tr>
+								<td valign="top" width="568" style="line-height: 18px; border-top-color: rgb(212, 208, 200); border-right-color: rgb(212, 208, 200); border-bottom-color: rgb(212, 208, 200); border-left-color: rgb(212, 208, 200); border-width: initial; border-style: initial; border-collapse: collapse; padding-top: 0px; padding-right: 5.4pt; padding-bottom: 0px; padding-left: 5.4pt; min-width: 50px; width: 426.1pt; background-color: rgba(0, 0, 0, 0); ">
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">$ arm-linux-gdb ./overflow</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">GNU gdb 6.6</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">Copyright (C) 2006 Free Software Foundation, Inc.</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">GDB is free software, covered by the GNU General Public License, and you are</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">welcome to change it and/or distribute copies of it under certain conditions.</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">Type &quot;show copying&quot; to see the conditions.</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">There is absolutely no warranty for GDB. Type &quot;show warranty&quot; for details.</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">This GDB was configured as &quot;--host=i686-pc-linux-gnu --target=arm-linux&quot;...</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">(gdb)<span>&nbsp;</span><strong>target remote 192.168.2.1:5678</strong></span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">Remote debugging using 192.168.2.1:5678</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">0x28556080 in ??()</span>
+									</p>
+									<p style="margin: 10px auto; text-indent: 21pt;"><span style="font-size: large;">(gdb)</span>
+									</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p style="margin-top: 10px; margin-right: auto; margin-bottom: 10px; margin-left: auto; text-indent: 21pt; "><span style="font-size: large;">接下来你就可以象前面所介绍的那样使用gdb命令了，比如设置断点及查看变量单步执行等。</span>
+				</p>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

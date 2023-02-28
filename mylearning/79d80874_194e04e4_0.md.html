@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="Application" content="myBase Desktop">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css">
+		<link rel="stylesheet" type="text/css" href="1ea0d80_15be03ec_0.css">
+
+		<!-- highlight.js begins -->
+		<script src="1ea0d80_3c6d0691_0.js" type="text/javascript"></script>
+		<script>
+			if(window.app && window.app.getConfigValByKey){
+				hljs.configure({tabReplace: function(n){if(n<1 || n>32) n=4; var r=""; while(n-- > 0) r+=" "; return r;}(parseInt(window.app.getConfigValByKey("HtmlEdit.TabWidth")))});
+			}
+			hljs.initHighlightingOnLoad();
+		</script>
+		<!-- highlight.js ends -->
+
+		
+
+	</head>
+
+	<body>
+
+	<article><h1 id="test-">test 标题</h1>
+<h1 id="-">一级标题</h1>
+<h2 id="-">二级标题</h2>
+<h3 id="-">三级标题</h3>
+<h4 id="-">四级标题</h4>
+<h5 id="-">五级标题</h5>
+<h6 id="-">六级标题</h6>
+<h1 id="-">换行</h1>
+<p>Markdown有两种换行方式：
+</br> 使用html中的换行标签
+两个回车
+方法1：
+</br>
+使用html中的“换行标签”换行
+方法2：</p>
+<p>两个回车</p>
+<h1 id="-">分割线</h1>
+<p>Markdown有两种换行方式：
+用 <em>** （3个</em>号）表示</p>
+<p><hr/> 使用html中的换行标签</p>
+<p>look
+**分割线</p>
+<hr/>
+
+
+
+<h1 id="-">引用</h1>
+<p>Markdown中引用直接使用 &gt;（大于号）即可</p>
+<blockquote>
+<p>学而时习之,不亦说乎      --abc</p>
+</blockquote>
+<h1 id="-">转义</h1>
+<p>当我们在符号前加上 \ 它就会转义，不会产生应有效果
+> 不是引用
+</br>
+# 不是标题
+</br>
+# aaa</p>
+<h1 id="-">常见字体效果</h1>
+<p>在Markdown中有4种常见字体效果：斜体、加粗、高亮、划线
+<em>斜体</em>
+</br>
+<strong>加粗</strong>
+</br>
+==高亮==
+</br>
+<del>划线</del>
+</br></p>
+<h1 id="-">超链接 &amp; 图片</h1>
+<p>Markdown中 超链接 和 显示网页图片 其实差不多，就一个 ! 的区别
+格式：
+<a href="链接">显示文字</a>
+<img src="图片链接" alt="图片无法显示时，显示的文字">
+示例：</p>
+<p><a href="http://www.baidu.com/">百度一下</a>
+</br>
+<a href="http://192.168.0.2/">192.168.0.2</a>
+</br>
+<img src="http://192.168.0.20/logo.png" alt="必应壁纸"></p>
+<h1 id="-">代码高亮</h1>
+<p>格式：</p>
+<pre><code class="lang-key">code
+</code></pre>
+<p>示例：</p>
+<pre><code class="lang-java">public class JavaApplication32 {
+public static void main(String[] args) {
+System.out.println(&quot;Hello World!&quot;)
+}
+}
+</code></pre>
+<h2 id="test-c">test c</h2>
+<pre><code class="lang-c">int test_endian(int i)
+{
+union{
+    int a;
+    char b;
+}temp;
+
+
+    temp.a = 0x12345678;
+    if(temp.b == 0x12)
+    {
+        //大端:低地址存的是数据的高字节数据
+        if(i)
+            printf(&quot;Big-endian\n&quot;);
+        else
+            printf(&quot;大端模式\n&quot;);
+        return &#39;B&#39;;
+    }
+    else
+    {
+        printh(&quot;temp.b=0x%x\n&quot;,temp.b);
+        //小端:低地址存的是数据的低字节数据
+        if(i)
+            printf(&quot;Little-endian\n&quot;);
+        else
+            printf(&quot;小端模式\n&quot;);
+        return &#39;L&#39;;
+    }
+    test_ip_endian(temp.a);
+    return 0;
+}
+</code></pre>
+<h2 id="-key-">编程语言 &amp; key 对应表（常用语言）</h2>
+<table>
+<thead>
+<tr>
+<th>language</th>
+<th>key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>actionScript</td>
+<td>actionscript</td>
+</tr>
+<tr>
+<td>Bash</td>
+<td>bash</td>
+</tr>
+<tr>
+<td>c++</td>
+<td>cpp</td>
+</tr>
+<tr>
+<td>c#</td>
+<td>cs</td>
+</tr>
+<tr>
+<td>CSS</td>
+<td>css</td>
+</tr>
+<tr>
+<td>Java</td>
+<td>java</td>
+</tr>
+<tr>
+<td>Go</td>
+<td>go</td>
+</tr>
+<tr>
+<td>HTML</td>
+<td>html</td>
+</tr>
+<tr>
+<td>JavaScript</td>
+<td>javascript</td>
+</tr>
+<tr>
+<td>JSON</td>
+<td>json</td>
+</tr>
+<tr>
+<td>perl</td>
+<td>perl</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>python</td>
+</tr>
+<tr>
+<td>SQL</td>
+<td>SQL</td>
+</tr>
+<tr>
+<td>XML</td>
+<td>xml</td>
+</tr>
+<tr>
+<td>Makefile</td>
+<td>makefile</td>
+</tr>
+<tr>
+<td>VIM</td>
+<td>vim</td>
+</tr>
+</tbody>
+</table>
+<h1 id="-">待办事项</h1>
+<ul>
+<li>[ ] 未完成事项</li>
+<li>[x] 已完成事项</li>
+</ul>
+<h1 id="-">表格</h1>
+<p>格式:</p>
+<table>
+<thead>
+<tr>
+<th>标题1</th>
+<th>标题2</th>
+<th>标题3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>内容1</td>
+<td>内容2</td>
+<td>内容3</td>
+</tr>
+<tr>
+<td>内容4</td>
+<td>内容4</td>
+<td>内容4</td>
+</tr>
+</tbody>
+</table>
+<h1 id="-">列表</h1>
+<p>在Markdown中有两种列表：无序列表（无数字）、有序列表（有数字）</p>
+<p>无序列表：</p>
+<ul>
+<li>列表1<ul>
+<li>列表1.1</li>
+<li>列表1.2</li>
+</ul>
+</li>
+</ul>
+<p>有序列表：</p>
+<ol>
+<li>内容1<ul>
+<li>内容1.1</li>
+</ul>
+</li>
+<li>内容2</li>
+<li>内容3</li>
+</ol>
+<hr>
+<p>&Pi;
+--------------------------------------------------end--------------------------------------------------------------------</p>
+<p>灰色
+HSV 0 93 0</p>
+<p>RGB 239 239 239</p>
+<p>深色
+HSV 72 14 13    </p>
+<p>RGB 35 36 31</p>
+<p>浅绿色
+HSV 86 114 15    </p>
+<p>RGB 189 221 186</p>
+</article>
+
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

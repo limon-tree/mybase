@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div>本文是本人对OpenWrt的Makefile的理解，并非转载。
+			</div>
+			<div>OpenWrt是一个典型的嵌入式Linux工程，了解OpenWrt的Makefile的工作过程对提高嵌入式Linux工程的开发能力有极其重要意义。
+			</div>
+			<div>OpenWrt的主Makefile文件只有100行，可以简单分为三部分，1~17行为前导部分，19~31为首次执行部分，33~101为再次执行部分。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 前导部分
+			</div>
+			<div>CURDIR为make默认变量，默认值为当前目录。
+			</div>
+			<div>前导部分主要把变量TOPDIR赋值为当前目录，把变量LC_ALL、LANG赋值为C，并使用变量延伸指示符export，把上述三个变量延伸到下层Makefile。
+			</div>
+			<div>使用文件使用指示符include引入$(TOPDIR)/include/host.mk。在OpenWrt的主Makefile文件使用了多次include指示符，说明主Makefile文件被拆分成多个文件，被拆分的文件放在不同的目录。拆分的目的是明确各部分的功能，而且增加其灵活性。
+			</div>
+			<div>在前导部分比较费解的是使用world目标，在makefile中基本规则为：
+			</div>
+			<div>TARGETS : PREREQUISITES
+			</div>
+			<div>COMMAND
+			</div>
+			<div>...
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 即makefile规则由目标、依赖、命令三部分组成，在OpenWrt的主Makefile文件的第一个目标world没有依赖和命令。它主要起到指示当make命令不带目标时所要执行的目标，没有设定依赖和命令部分表明此目标在此后将会有其他依赖关系或命令。world目标的命令需要进一步参考$(TOPDIR)/include/toplevel.mk和主Makefile文件的再次执行部分。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 首次执行部分
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; OPENWRT_BUILD是区分首次执行与再次执行的变量。在首次执行时使用强制赋值指示符override把OPENWRT_BUILD赋值为1，并使用变量延伸指示符export把OPENWRT_BUILD延伸。在OPENWRT_BUILD使用强制赋值指示符override意味着make命令行可能引入OPENWRT_BUILD参数。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 引入$(TOPDIR)/include/debug.mk、$(TOPDIR)/include/depends.mk、$(TOPDIR)/include/toplevel.mk三个文件，由于TOPDIR是固定的，所以三个文件也是固定的。其中$(TOPDIR)/include/toplevel.mk的135行%::有效解释首次执行时world目标的规则。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 再次执行部分
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 引入rules.mk、$(INCLUDE_DIR)/depends.mk、$(INCLUDE_DIR)/subdir.mk、target/Makefile、package/Makefile、tools/Makefile、toolchain/Makefile七个文件，rules.mk没有目录名，即引入与主Makefile文件目录相同的rules.mk。在rules.mk定义了INCLUDE_DIR为$(TOPDIR)/include，所以$(INCLUDE_DIR)/depends.mk实际上与首次执行时引入的$(TOPDIR)/include/depends.mk是同一个文件。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 四个子目录下的Makefile实际上是不能独立执行。主要利用$(INCLUDE_DIR)/subdir.mk动态建立规则，诸如$(toolchain/stamp-install)目标是靠$(INCLUDE_DIR)/subdir.mk的stampfile函数动态建立。在package/Makefile动态建立了$(package/ stamp-prereq)、$(package/ stamp-cleanup)、$(package/ stamp-compile)、$(package/ stamp-install)、$(package/ stamp-rootfs-prepare)目标。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 定义一些使用变量命名的目标，其变量的赋值位置在$(INCLUDE_DIR)/subdir.mk的stampfile函数中。目标只有依赖关系，可能说明其工作顺序，在$(INCLUDE_DIR)/subdir.mk的stampfile函数中有进一步说明其目标执行的命令，并为目标建立一个空文件，即使用变量命名的目标为真实的文件。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 定义一些使用固定的目标规则。
+			</div>
+			<div>其中：clean是清除编译结果的目标，清除$(BUILD_DIR) $(BIN_DIR) $(BUILD_LOG_DIR)三个目录的用意是十分明确。暂时不知道为什么执行make target/linux/clean。
+			</div>
+			<div>dirclean是删除所有编译过程产生的目录和文件的目标，执行dirclean目标依赖于clean，因此将执行clean目标所执行的命令，然后删除$(STAGING_DIR) $(STAGING_DIR_HOST) $(STAGING_DIR_TOOLCHAIN) $(TOOLCHAIN_DIR) $(BUILD_DIR_HOST) $(BUILD_DIR_TOOLCHAIN)目录，以及删除$(TMP_DIR)目录。上述目录的变量均在rules.mk定义。好像删除staging_dir目录就意味着删除staging_dir目录下的所有子目录，不知道为什么要强调删除$(STAGING_DIR_HOST) $(STAGING_DIR_TOOLCHAIN) $(TOOLCHAIN_DIR)目录。同样删除builde_dir目录就意味着删除builde_dir目录下的所有子目录，不知道为什么要强调删除$(BUILD_DIR_TOOLCHAIN)目录。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; tmp/.prereq_packages目标是对所需软件包的预处理。目标依赖于.config，即执行make menuconfig后将会进行一次所需软件包的预处理。不知什么原因在编译前删除tmp目录，执行时无法建立tmp/.prereq_packages文件。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; prereq应该是预请求目标，在OpenWrt执行Makefile时好像都要先执行prereq目标。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; prepare应该是准备目标，是world依赖的一个伪目标。依赖于文件.config和$(tools/stamp-install) $(toolchain/stamp-install)目标。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; world就是编译的目标。依赖于prepare为目标和前面提到的变量命名目标。采用取消隐含规则方式执行package/index目标。package/index目标在package/Makefile的92行定义。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; package/symlinks和package/symlinks-install是更新或安装软件包来源的目标，使用$(SCRIPT_DIR)/feeds脚本文件完成。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; package/symlinks-clean是清除软件包来源的目标，也是使用$(SCRIPT_DIR)/feeds脚本文件完成。
+			</div>
+			<div>&nbsp; &nbsp; &nbsp; &nbsp; 最后使用伪目标.PHONY说明clean dirclean prereq prepare world package/symlinks package/symlinks-install package/symlinks-clean属于伪目标。通过伪目标说明可以知道可以执行的目标。
+			</div>
+			<div><br />
+			</div>
+			<div><br />
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

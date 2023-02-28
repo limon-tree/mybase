@@ -1,0 +1,96 @@
+﻿
+/****************************************************************************************
+
+Default stylesheet for Markdown documents
+=========================================
+
+Notes:
+The stylesheet code applies to all Markdown documents loaded in the embedded web browser.
+It's not recommended to make any modifications to this inbuilt file. Custom css can safely
+be injected by linking an external .css file from within Options/Edit/Html.
+
+All stylesheet code must conform to the W3C/CSS Specs (https://www.w3.org/Style/CSS/).
+And it's recommended first to create a backup of the original code before making changes.
+
+****************************************************************************************/
+
+a {
+	color: #0366e6;
+	text-decoration: none;
+}
+
+a:hover {
+	/*text-decoration: underline;*/
+}
+
+blockquote {
+	margin-left: 1em;
+	border-left: 6px solid #ddd;
+	padding-left: 3px;
+	color: #777;
+}
+
+hr {
+	border: 0;
+	border-bottom: 1px solid #ddd;
+}
+
+pre {
+
+}
+
+code {
+
+}
+
+p {
+
+}
+
+div {
+
+}
+
+h1 {
+
+}
+
+h2 {
+
+}
+
+h3 {
+
+}
+
+h4 {
+
+}
+
+h5 {
+
+}
+
+h6 {
+
+}
+
+table{
+
+}
+
+th{
+
+}
+
+td{
+
+}
+
+tr{
+
+}
+
+tr:nth-child(2n){
+
+}

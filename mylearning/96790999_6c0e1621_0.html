@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="content b-txt1">Title: jiffies溢出与时间先后比较<br /><span>编制： 
+chinakapok@sina.com</span><br /><span>日期：2005-05-25</span><br /><span>1. 
+概述</span><br /><span>在Linux内核中，TCP/IP协议栈在很多用到时间比较的地方都使用了jiffies？本文介绍了什么是jiffies，jiffies溢出可能造成的问题，使用time_after等宏来正确地比较时间及其背后的原理。</span><br /><span>2. 
+jiffies简介</span><br /><span>2.1 
+时钟中断</span><br /><span>在Linux内核中，TCP/IP协议栈在很多用到时间比较的地方都使用了jiffies。</span><br /><span>那么jiffies是什么呢？我们知道，操作系统应该能够在将来某个时刻准时调度某个任务，所以需要一种能保证任务准时调度运行的机制。希望支持每种操作系统的微处理器必须包含一个可周期性中断它的可编程间隔定时器。这个周期性中断被称为系统时钟滴答（或system 
+timer)，它象节拍器一样来组织系统任务，也称为时钟中断。</span><br /><span>时钟中断的发生频率设定为HZ，HZ是一个与体系结构无关的常数，在文件中定义。至少从2.0版到 
+2.1.43版，Alpha平台上Linux定义HZ的值为1024，而其他平台上定义为100。时钟中断对操作系统是非常重要的，当时钟中断发生时，将周期性地执行一些功能，例如：</span><br /><span>. 
+更新系统的uptime</span><br /><span>. 更新time of day</span><br /><span>. 
+检查当前任务的时间片是否用光，如果是则需要重新调度任务</span><br /><span>. 执行到期的dynamic 
+timer</span><br /><span>. 更新系统资源使用统计和任务所用的时间统计</span><br /><span>2.2 
+jiffies及其溢出</span><br /><span>全局变量jiffies取值为自操作系统启动以来的时钟滴答的数目，在头文件中定义，数据类型为 
+unsigned long volatile 
+(32位无符号长整型)。关于jiffies为什么要采用volatile来限定，可参考《关于volatile和jiffies.txt》。</span><br /><span>jiffies转换为秒可采用公式：(jiffies/HZ)计算，将秒转换为jiffies可采用公式：(seconds*HZ)计算。</span><br /><span>当时钟中断发生时，jiffies值就加1。因此连续累加一年又四个多月后就会溢出(假定HZ=100，1个jiffies等于1/100 
+秒，jiffies可记录的最大秒数为(2^32 
+-1)/100=42949672.95秒，约合497天或1.38年)，即当取值到达最大值时继续加1，就变为了0。</span><br /><span>在Vxworks操作系统中，定义HZ的值为60，因此连续累加两年又三个多月后也将溢出（jiffies可记录的最大秒数为约合2.27 
+年）。如果在Vxworks操作系统上的应用程序对jiffies的溢出没有加以充分考虑，那么在连续运行两年又三个多月后，这些应用程序还能够稳定运行吗？</span><br /><span>下面我们来考虑jiffies的溢出，我们将从以下几个方面来阐述：</span><br /><span>. 
+无符号整型溢出的具体过程</span><br /><span>. jiffies溢出造成程序逻辑出错</span><br /><span>. 
+Linux内核如何来防止jiffies溢出</span><br /><span>. 
+time_after等比较时间先/后的宏背后的原理</span><br /><span>. 
+代码中使用time_after等比较时间先/后的宏</span><br /><span>3. 
+无符号整型溢出的具体过程</span><br /><span>我们首先来看看无符号长整型（unsigned 
+long）溢出的具体过程。实际上，无符号整型的溢出过程都很类似。为了更具体地描述无符号长整型溢出的过程，我们以8位无符号整型为例来加以说明。</span><br /><span>8位无符号整型从0开始持续增长，当增长到最大值255时，继续加1将变为0，然后该过程周而复始：</span><br /><span>0, 
+1, 2, ..., 253, 254, 255,</span><br /><span>0, 1, 2, ..., 253, 254, 
+255,</span><br /><span>...</span><br /><span>4. 
+jiffies溢出造成程序逻辑出错</span><br /><span>下面，通过一个例子来看jiffies的溢出。</span><br /><span>例4-1：jiffies溢出造成程序逻辑出错</span><br /><span>unsigned 
+long timeout = jiffies + HZ/2;</span><br /><span>do_somework();</span><br /><span>if 
+(timeout &gt; jiffies) {</span><br /><span>no_timeout_handler();</span><br /><span>} 
+else 
+{</span><br /><span>timeout_handler();</span><br /><span>}</span><br /><span>本例的目的是从当前时间起，如果在0.5秒内执行完do_somework()，则调用no_timeout_handler()。如果在0.5秒后执行完do_somework()，则调用timeout_handler()。</span><br /><span>我们来看看本例中一种可能的溢出情况，即在设置timeout并执行do_somework()后，jiffies值</span>溢出，取值为0。设在设置 
+timeout后，timeout的值临近无符号长整型的最大值，即小于2^32-1。设执行do_somework()花费了1秒，那么代码应当调用 
+timeout_handler()。但是当jiffies值溢出取值为0后，条件timeout &gt; 
+jiffies成立，jiffies值（等于0）小于timeout（临近但小于2^32-1），尽管从逻辑上讲jiffies值要比timeout大。但最终代码调用的是no_timeout_handler()，而不是timeout_handler()。<br /><span>5. 
+Linux内核如何来防止jiffies溢出</span><br /><span>Linux内核中提供了以下四个宏，可有效地解决由于jiffies溢出而造成程序逻辑出错的情况。下面是从Linux 
+Kernel 2.6.7版本中摘取出来的代码：</span>
+				<pre style="padding: 8px;">
+<code><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#define</span> time_after(a,b)
+</p><p style="margin:0px;">(typecheck(<span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">long</span>, a) &amp;&amp;
+</p><p style="margin:0px;">typecheck(<span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">long</span>, b) &amp;&amp;
+</p><p style="margin:0px;">((<span style=" font-weight:600; color:#8b008b;">long</span>)(b) - (<span style=" font-weight:600; color:#8b008b;">long</span>)(a) &lt; <span style=" font-weight:600; color:#4682b4;">0</span>))
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#define</span> time_before(a,b) time_after(b,a)
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p><p style="margin:0px;"><span style=" font-weight:600; color:#800080;">#define</span> time_after_eq(a,b)
+</p><p style="margin:0px;">(typecheck(<span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">long</span>, a) &amp;&amp;
+</p><p style="margin:0px;">typecheck(<span style=" font-weight:600; color:#8b008b;">unsigned</span> <span style=" font-weight:600; color:#8b008b;">long</span>, b) &amp;&amp;
+</p><p style="margin:0px;">((<span style=" font-weight:600; color:#8b008b;">long</span>)(a) - (<span style=" font-weight:600; color:#8b008b;">long</span>)(b) &gt;= <span style=" font-weight:600; color:#4682b4;">0</span>))
+</p><p style="-qt-paragraph-type:empty; margin:0px;"><br>
+</p></code><p style="margin:0px;"><code><span style=" font-weight:600; color:#800080;">#define</span> time_before_eq(a,b) time_after_eq(b,a)</code></p></pre>
+			</div>
+			<div class="content b-txt1"><span>在宏time_after中，首先确保两个输入参数a和b的数据类型为unsigned 
+long，然后才执行实际的比较。这是以后编码中应当注意的地方。</span><br /><span>6. 
+time_after等比较时间先后的宏背后的原理</span><br /><span>那么，上述time_after等比较时间先/后的宏为什么能够解决jiffies溢出造成的错误情况呢？</span><br /><span>我们仍然以8位无符号整型(unsigned 
+char)为例来加以说明。仿照上面的time_after宏，我们可以给出简化的8位无符号整型对应的after宏：</span><br /><span>#define 
+uc_after(a, b) ((char)(b) - (char)(a) &lt; 0)&nbsp;<span style="background-color: rgb(255, 255, 0);">a是在b之后,即a&gt;b 为ture,</span></span><br /><span>设a和b的数据类型为unsigned 
+char，b为临近8位无符号整型最大值附近的一个固定值254，下面给出随着a（设其初始值为254）变化而得到的计算值：</span>
+			</div>
+			<div class="content b-txt1">
+				<div>
+					<pre>
+<code id="ID_17559AC1B53" class="hljs lisp"><ol><li>        unsigned char a=254<span class="hljs-comment">;</span></li><li>        unsigned char b=254<span class="hljs-comment">;</span></li><li>        int i = <span class="hljs-number">0</span><span class="hljs-comment">;</span></li><li></li><li>                printf(<span class="hljs-string">"a\tb\t(char)b-char(a)\n"</span> )<span class="hljs-comment">;</span></li><li>        for(<span class="hljs-name">i=0</span><span class="hljs-comment">; i &lt; 255; i++){</span></li><li>                printf(<span class="hljs-string">"%d\t%d\t%d\n"</span>,(<span class="hljs-name">a++</span>), b, (<span class="hljs-name">char</span>)(<span class="hljs-name">b</span>)-(<span class="hljs-name">char</span>)(<span class="hljs-name">a</span>))<span class="hljs-comment">;</span></li><li></li><li>        }</li></ol></code></pre>
+				</div>
+				<div>
+					<pre>
+<code id="ID_17559AE1B6B" class="hljs lsl"><ol><li>a      b      (char)b-char(a)</li><li><span class="hljs-number">254</span>    <span class="hljs-number">254</span>    <span class="hljs-number">0</span></li><li><span class="hljs-number">255</span>    <span class="hljs-number">254</span>    <span class="hljs-number">-1</span></li><li><span class="hljs-number">0</span>      <span class="hljs-number">254</span>    <span class="hljs-number">-2</span></li><li><span class="hljs-number">1</span>      <span class="hljs-number">254</span>    <span class="hljs-number">-3</span></li><li>...</li><li><span class="hljs-number">124</span>    <span class="hljs-number">254</span>    <span class="hljs-number">-126</span></li><li><span class="hljs-number">125</span>    <span class="hljs-number">254</span>    <span class="hljs-number">-127</span></li><li><span class="hljs-number">126</span>    <span class="hljs-number">254</span>    <span class="hljs-number">-128</span></li><li><span class="hljs-number">127</span>    <span class="hljs-number">254</span>    <span class="hljs-number">-129</span></li><li><span class="hljs-number">128</span>    <span class="hljs-number">254</span>    <span class="hljs-number">126</span></li><li>...</li><li><span class="hljs-number">252</span>    <span class="hljs-number">254</span>    <span class="hljs-number">2</span></li><li><span class="hljs-number">253</span>    <span class="hljs-number">254</span>    <span class="hljs-number">1</span></li></ol></code></pre>
+				</div><span>从上面的计算可以看出，设定b不变，随着a（设其初始值为254）不断增长1，a的取值变化为：</span><br /><span>254, 
+255, (一次产生溢出)</span><br /><span>0, 1, ..., 124, 125, 126, 127, 126, ..., 253, 254, 
+255, (二次产生溢出)</span><br /><span>0, 1, 
+...</span><br /><span>...</span><br /><span>而(char)(b) - 
+(char)(a)的变化为：</span><br /><span>0, -1,</span><br /><span>-2, -3, ..., -126, -127, 
+-128, 127, 126, ..., 1, 0, -1,</span><br /><span>-2, -3, 
+...</span><br /><span>...</span><br /><span>从上面的详细过程可以看出，当a取值为254，255, 
+接着在（一次产生溢出）之后变为0，然后增长到127之前，uc_after(a,b)的结果都显示<span style="background-color: rgb(255, 255, 0); ">a是在b之后</span>，这也与我们的预期相符。但在a取值为 
+127之后，uc_after(a,b)的结果却显示a是在b之前。</span><br /><span>从上面的运算过程可以得出以下结论：</span><br /><span>使用uc_after(a,b)宏来计算两个8位无符号整型a和b之间的大小（或先/后，before/after），那么a和b的取值应当满足以下限定条件：</span><br /><span>. 
+两个值之间相差从逻辑值来讲应小于有符号整型的最大值。</span><br /><span>. 
+对于8位无符号整型，两个值之间相差从逻辑值来讲应小于128。</span><br /><span>从上面可以类推出以下结论：</span><br /><span>对于time_after等比较jiffies先/后的宏，两个值的取值应当满足以下限定条件：</span><br /><span>两个值之间相差从逻辑值来讲应小于有符号整型的最大值。</span><br /><span>对于32位无符号整型，两个值之间相差从逻辑值来讲应小于2147483647。2^31-1</span><br /><span>对于HZ=100，那么两个时间值之间相差不应当超过2147483647/100秒 
+= 0.69年 = 248.5天。对于HZ=60，那么两个时间值之间相差不应当超过2147483647/60秒 = 
+1.135年。在实际代码应用中，需要比较先/后的两个时间值之间一般都相差很小，范围大致在1秒~1天左右，所以以上time_after等比较时间先 
+/后的宏完全可以放心地用于实际的代码中。</span><br /><span>7. 
+代码中使用time_after等比较时间先/后的宏</span><br /><span>下面代码是针对例4-1修改后的正确代码：</span><br />pan 
+&gt; 例7-1：在例4-1基础上使用time_before宏后的正确代码<br /><span>unsigned long timeout = jiffies 
++ HZ/2;</span><br /><span>do_somework();</span><br /><span>if (time_before(jiffies, 
+timeout)) {//a是在b之前,a&lt;b</span><br /><span>no_timeout_handler();</span><br /><span>} else 
+{</span><br /><span>timeout_handler();</span><br /><span>}</span><br /><span>8. 
+结论</span><br /><span>系统中采用jiffies来计算时间，但由于jiffies溢出可能造成时间比较的错误，因而强烈建议在编码中使用time_after等宏来比较时间先后关系，这些宏可以放心使用。</span><br /><span>9. 
+参考资料</span><br /><span>[1] 在《Linux Kernel Development, Second Edition》Chapter 
+10中给出了与时间相关的HZ、jiffies、延迟、各种timer等更全面，更精彩而有趣的讨论。</span><br /><span>[2]《关于volatile和jiffies》，可见http://ggnm.coku.com/。</span>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

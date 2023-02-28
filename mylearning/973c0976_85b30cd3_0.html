@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			body, table{font-family: 微软雅黑}
+			
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div><br />
+		</div>
+		<div><br />
+		</div>
+		<div>__attribute__((<span class="hljs-function"><span class="hljs-keyword">constructor</span>)) 构造函数属性,可以在main()函数之前被自动调用,同样的,析构函数属性使函数在main()完成或者调用exit()后自动被调用</span>
+		</div>
+		<div><span class="hljs-function">具有这些属性的函数对于初始化在程序执行期间被隐式的使用的数据很有用</span>
+		</div>
+		<div><br />
+		</div>
+		<div>web 的cgi handler函数通过CYG_HTTPD_HANDLER_TABLE_ENTRY宏,生成一个web_root的链表结构
+		</div>
+		<div>
+			<pre>
+<code id="ID_17F0BB778E9" class="hljs delphi">#define CYG_HTTPD_HANDLER_TABLE_ENTRY(_name_, _path_, _handler_) \
+    web_handler_t _name_ = <span class="hljs-comment">{_path_, _handler_, false, false}</span>;    \
+    void __attribute__((<span class="hljs-function"><span class="hljs-keyword">constructor</span>)) _<span class="hljs-title">name_</span>##_<span class="hljs-title">constructor</span><span class="hljs-params">()</span> <span class="hljs-comment">{   \
+        _name_.next = web_root;                                  \
+        web_root = &amp;_name_;                                      \
+    }</span></span></code></pre>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(二)：从芯片开始
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-04-29 17:27
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：路由芯片公司们会提供各种资料，包括电路板设计原理图、开发SDK等，这些东西完善到大家难以想像的地步，只要有一台电脑、一款开发板编译安装好系统，一台样品路由器就出来了，连WEB界面都是完善的，所以以前传统厂商拼杀的基本只剩价格和外观。
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">上一章我们讲了<a href="http://www.leiphone.com/diy-a-smart-router.html" target="_blank" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;">这次DIY活动的来龙去脉</a>，本章我们将一起了解下路由器的架构，芯片，操作系统相关的知识。我们的目标是让大家都能做智能路由，所以hoowa会尽可能少涉及到嵌入式的知识，因为这孩子本身学习就不好，他自己也害怕那些所谓的各种&quot;定义&quot;会让他联想到上学的时候理科从来都不及格。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">嵌入式的架构定义
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">略。刚说了不讲这些的，就算我给大家讲了我也是从别的书里抄过来的，有意义么，我一定讲我自己的。谢谢鼓掌!!!
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">MIPS处理器架构
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">现在的路由器基本架构和性能已经非常接近于我们的电脑了。近十年来，路由器所采用的CPU主要都是基于MIPS架构设计的。说到MIPS可能很多人陌生，说到龙芯了解的人就比较多了，龙芯便是MIPS架构下的一种比较烂的处理器。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MIPS架构是由斯坦福大学的教授约翰·轩尼诗在闲的无聊的时候带领他的团队开发的一款处理器。在随后的3年时间他创立了MIPS科技公司。MIPS采用了RISC精简指令集设计技术，MIPS架构处理器在当时刷新了32位处理器性能的历史。 在2002年中国研发龙芯处理器，采用了MIPS架构但是没有经过MIPS公司授权遭到起诉，2009年与MIPS公司和解。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MIPS架构有过辉煌的历史，它曾经是芯片三国大战（x86、MIPS、PowerPC）的佼佼者，hoowa记得在2000年间国内还可以买到一款叫做Cobalt的服务器(Sun公司为抢占市场收购了这家公司)。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">简单地说，MIPS架构当年就是为了电脑而设计的，跟另外两种通用处理器一样，但是后期在这一领域被Intel给无情的打死了。之后转战嵌入式领域，由于MIPS架构的开放性，因此涌出大量芯片公司基于该架构开发路由器芯片。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">芯片厂商
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">我们现在所使用的路由器，其中90%以上都是采用的MIPS架构的芯片，而且基本上都是32位处理器。在同等价位的情况下，32位，高集成，高性能的处理器，只有MIPS在这个定位领域中最强（相比ARM的低性能版本要强很多）。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">路由芯片目前普遍采用的是SoC(System on a Chip)设计，路由器厂家喜欢叫做RoC(Router on a Chip)设计。</strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这些厂家将内存控制、外围IO电路接口、Switch芯片、Wi-Fi芯片、加密芯片、SATA接口、PCIE接口、USB接口等等你能想到没想到的统统都集成到了一块手指甲大小的芯片中，其功耗只有1W到3W之间，性能达到了400MHz到800MHz之间。但目前有少数厂家已经开始基于ARM开发路由器芯片了，比如Broadcom(博通)公司的BCM470X系列芯片，采用的就是ARM架构，小米路由器第一代产品便是基于此芯片设计。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">Atheros公司</strong>：Atheros是全球路由芯片的顶级公司，其创始人便是MIPS架构的发明者约翰·轩尼诗。Atheros的芯片采用MIPS32位架构设计，并且该公司也是Wi-Fi标准的制定者之一，国内<span style="color: rgb(0, 0, 0);">已上市</span>的智能路由产品中目前只有极路由·壹代采用这款方案。Atheros也是目前OpenWRT系统支持最完整、全全面的芯片。在后期的教程中为了让大家更多了解OpenWRT降低入门难度，我们将基于该公司的方案进行讲解。该公司目前唯一的问题是在国内的配套产业链不够完善，并且其一款经典芯片跟TP-Link穿一条裤子限制卖给其它厂商。Atheros在2011年被高通收购，目前旗下产品线正逐步切换到高通品牌下。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">Broadcom公司</strong>： Broadcom是全球主要无线路由芯片的出货商之一，其产品以稳定可靠著称。小米第一代路由器便是采用其BCM470X系列处理器，该处理器是ARM架构，不过Boradcom其他的路由芯片大部分都是MIPS架构。该公司的路由器芯片目前在国内有两个问题，一是对合作厂商要求极高，小公司不搭理。二是，其芯片发热量很大。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">Ralink公司</strong>：雷凌科技来自中国台湾地区，也是一家常年耕耘在路由器领域的芯片厂商，而且是目前国内出货量最大的路由器厂商，该厂商不论是产业链，还是相关开发资料，在国内都是最成熟的，其芯片价格也是最便宜的。因此目前国内上市的智能路由产品大部分都采用该公司方案。这家厂商的问题，主要是不重视OpenWRT项目，并且其重要的驱动代码并不开源。Ralink在2011年被联发科收购，目前产品线已经完全切换到MTK品牌。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">常见的路由器硬件规格</strong>
+							</p>
+							<div align="center" style="margin: 0px; padding: 0px;">
+								<table class="tg" style="border-collapse: collapse; border-spacing: 0px; border-color: rgb(170, 170, 170);">
+									<tbody>
+										<tr>
+											<th class="tg-031e" colspan="2" style="margin: 0px; padding: 10px 5px; font-style: normal; font-weight: normal; text-align: left; font-family: Arial, sans-serif; font-size: 14px; border-style: solid; border-width: 1px; overflow: hidden; word-break: normal; border-color: rgb(170, 170, 170); color: rgb(255, 255, 255); background-color: rgb(243, 134, 48);">硬件规格
+											</th>
+										</tr>
+										<tr>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">处理器
+											</td>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">MIPS32位架构(无FPU), ARM架构(非常少见)
+											</td>
+										</tr>
+										<tr>
+											<td class="tg-z2zr" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(252, 251, 227);">主频
+											</td>
+											<td class="tg-z2zr" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(252, 251, 227);">320Mhz 到 800Mhz
+											</td>
+										</tr>
+										<tr>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">内存类型
+											</td>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">SDRAM,DDR1,DDR2
+											</td>
+										</tr>
+										<tr>
+											<td class="tg-z2zr" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(252, 251, 227);">内存容量
+											</td>
+											<td class="tg-z2zr" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(252, 251, 227);">16MB-256MB, 常见的是32MB / 64MB / 128MB
+											</td>
+										</tr>
+										<tr>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">存储器类型
+											</td>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">Nor Flash / SPI Flash / Nand Flash
+											</td>
+										</tr>
+										<tr>
+											<td class="tg-z2zr" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(252, 251, 227);">存储器容量
+											</td>
+											<td class="tg-z2zr" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(252, 251, 227);">4MB-128MB, 常见的是SPI 8MB / SPI 16MB
+											</td>
+										</tr>
+										<tr>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">交换机
+											</td>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">一般芯片内置或外挂
+											</td>
+										</tr>
+										<tr>
+											<td class="tg-z2zr" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(252, 251, 227);">WIFI
+											</td>
+											<td class="tg-z2zr" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(252, 251, 227);">一般芯片内置完整的WIFI或部分外挂
+											</td>
+										</tr>
+										<tr>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">支持操作系统
+											</td>
+											<td class="tg-031e" style="margin: 0px; padding: 10px; font-family: Arial, sans-serif; font-size: 14px; border: 1px solid rgb(51, 51, 51); overflow: hidden; word-break: normal; color: rgb(51, 51, 51); background-color: rgb(255, 255, 255);">Linux, VxWorks
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;"><span style="line-height: 1.5em;">部分名词解释</span></strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">Nor Flash：最早的用于嵌入式的存储技术, 读取速度接近于内存，写速度稍慢。<br />Nand Flash：目前使用最多的存储器技术, 在手机,U盘,SSD硬盘上都采用该技术, 容量较大, 路由器领域使用较少。<br />SPI Flash：串行总线Flash，目前路由器领域使用最广泛的存储器，读速度比Nor Flash慢，写速度比Nor Flash快很多。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">传统路由器怎么做的
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">目前传统路由器厂商，都是基于以上公司芯片设计的。<strong style="font-style: normal; font-weight: bold;">这些芯片公司们会提供各种资料，包括电路板设计原理图、开发SDK等，这些东西完善到大家难以想像的地步，只要有一台电脑、一款开发板编译安装好系统，一台样品路由器就出来了，连WEB界面都是完善的，所以以前传统厂商拼杀的基本只剩价格和外观。</strong><span>&nbsp;</span>而一些不法的小厂商，为了让大家觉得无线路由器信号强，使用了违规的大功率信号放大装置，我们现在国内的无线Wi-Fi污染其实已经很严重了。如果这件事情发生在美国，美国政府会把厂商告破产。但是在国内，找不到人管。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">由于国内的传统路由器厂商，过于注意外观(比如路由器必须有天线，因为客户觉得有天线信号强，真他妈神奇只有中国才有这种说法)，不注重软件(芯片厂家连WEB都做了，没自己啥事)，所以普遍传统路由器厂商在智能路由的领域中，都处于被动，存在被边缘化的风险。这其中的大厂像TP-Link、磊科这类公司已经意识到自己的风险，正在努力的开发智能路由产品。 不过我还是要黑下， 对于这些公司来说， 早晚是要左手打右手，他们到底敢革自己命到啥程度，难说！
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">智能路由器怎么做的
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">目前大部分智能路由采用了OpenWRT这个开源路由器操作系统作为自己的系统，然后对系统进行修修改改，做个自主知识产权的产品，然后还申请了源代码著作权登记，真不知道这群玩意咋想的，感觉如果比脸皮后，中国人应该是银河系中最强的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">OpenWrt被称作为一个嵌入式的Linux发行版。当年Linksys开源了一款路由器的源代码，然后就有不同的人对这个源代码进行打补丁，然后每一个源代码都是针对一个不同的市场，最后东西就做的乱七八糟了。OpenWRT选择了另外一条路，他从头开始，一点点把各种软件加到系统中，而开放式的架构，令OpenWRT支持数量繁多的芯片，从X86、ARM到各种不知名的奇怪芯片。而开发者使用OpenWRT编译出来的固件，烧写到自己的电路板上之后，就相当于拥有了一台服务器。OpenWRT还支持一种称作为OPKG的增强型安装技术，它使用起来像CentOS下的YUM一样，只需要一个命令，就可以把需要的软件安装在路由器中。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">从2005年2月截止今日，OpenWRT已经支持了一千多种软件，并且自己移植软件到OpenWRT中非常容易简单。并且该系统高度模块化，有人说我的产品是深度定制的OpenWRT，其实，只要跟着hoowa把我们的课时学完，只要你懂Linux，人人都可以深度定制OpenWRT真的，是毫无技术可言的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">我们选择基于Atheros芯片的方案来配合OpenWRT也是因为该芯片方案被OpenWRT官方支持的最好，非常适合教学。而国内现在使用最多的Ralink芯片，虽然价格便宜，但是由于OpenWRT官方，和该公司都不太支持，因此并不适合本教学的教程。大家总不会让我去违反Ralink的保密协议，公开他们的那些自以为非常重要的驱动吧。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">连载教程的以后章节，将主要围绕OpenWRT这个系统讲解智能路由的开发，从简单的开发移动应用和WEB应用到涵盖到移植软件等各方面内容。
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

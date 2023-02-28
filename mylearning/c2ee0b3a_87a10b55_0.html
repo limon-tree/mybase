@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(五)：熟悉OpenWRT
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-05-04 08:10
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：想要进一步了解OpenWRT，你需要学习Linux文件系统、基础命令以及OpenWRT独有的OPKG软件包软件技术。
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">题记</strong>：呦呦鹿鸣，食野之苹。我有嘉宾，鼓瑟吹笙。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">从本章开始，我们要更多的了解系统的特性，以及不论是智能路由还是智能家居，我们用路由器的处理器到底能做多少事情。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">系统结构
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在上一章我们已经完成了刷机工作，这个时候系统进行了首次启动，并且格式化了它的&quot;可写&quot;分区。那么在设备里分区到底是怎么样进行的呢？我们首先需要知道：不同的处理器下OpenWRT分区是略微有所区别，不是所有的分区都完全相同的。在路由器的FLASH上，内核中所使用的驱动是MTD设备驱动。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">MTD（Memory Technology Devices，内存技术设备）是用于访问内存类设备(ROM、FLASH)的Linux驱动子系统。它的主要目的使FLASH类设备更加容易被访问，为此它在硬件和上层提供了一个抽象的接口，使得在操作系统下我们可以像操作硬盘一样操作这个设备。仔细观察过Linux启动信息的朋友会看到这么一段话：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">[ 0.690000] 5 tp-link partitions found on MTD device spi0.0<br />[ 0.700000] Creating 5 MTD partitions on &quot;spi0.0&quot;:<br />[ 0.700000] 0x000000000000-0x000000020000 : &quot;u-boot&quot;<br />[ 0.710000] 0x000000020000-0x00000012a290 : &quot;kernel&quot;<br />[ 0.730000] 0x00000012a290-0x0000007f0000 : &quot;rootfs&quot;<br />[ 0.760000] 0x000000300000-0x0000007f0000 : &quot;rootfs_data&quot;<br />[ 0.760000] 0x0000007f0000-0x000000800000 : &quot;art&quot;<br />[ 0.770000] 0x000000020000-0x0000007f0000 : &quot;firmware&quot;
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这些信息表示当前系统识别到的FLASH分区。我们可以用电脑中的计算器计算一下，打开计算器，选择科学型、十六进制，输入名为art的分区容量用(800000-7f0000)结果为10000(十六进制)，这个时候点击十进制，系统会自动将结果转换为十进制，再除以1024结果为64(K)表示这个分区容量为64k。在openwrt的系统中现在对atheros方案实现了自动查找分区结尾。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">上面的几个分区，我来说明下（分区名称、分区容量、分区作用）：
+							</p>
+							<ul style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: disc;">&quot;u-boot&quot;：128KB，设备初始化程序+引导程序代码本身
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">&quot;kernel&quot; ：1MB，存放系统内核的二进制代码，按照x86下的讲法是Raw分区，就是这里只有内核的二进制，不存在文件系统。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">&quot;rootfs&quot;：6.7MB，完整的系统文件包含只读和可写
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">&quot;rootfs_data&quot;：4.9MB，在rootfs中的可写部分的位置
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">&quot;art&quot;：64KB，EEPROM分区，在Atheros的方案中这个分区保存了无线的硬件参数
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">&quot;firmware&quot;：7.9MB，完整的固件位置包含了除&quot;u-boot&quot;和&quot;art&quot;之外全部的内容
+								</li>
+							</ul>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">看的晕了？ 这，我马上画个简单的图给大家看看：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/5-a1.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这个是它的分区逻辑。请不要太在意这个地方，有点晕也没关系，继续往后面看，这个地方留着后边慢慢理解。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在系统中，可以执行以下指令查看当前系统分区：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;"><a href="http://static.leiphone.com/uploads/2014/05/74.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a></span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">每个分区在flash中的位置是/dev/mtdblockX这样的位置,比如你想把art分区里的数据读出来看看，那么就执行：</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/94.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">然后执行hexdump -C /tmp/1就可以看到这个分区的内容了。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">系统的文件结构
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">好了，我们这一节将的非常重要。上一节说过系统在第一次启动的时候会格式化&quot;可写分区&quot;，这在逻辑上到底是啥关系呢？
+							</p>
+							<ol style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">首先uboot启动了kernel完成之后，由kernel加载&quot;ROM分区&quot;(就是rootfs减去rootfs_data得到的那一块分区)
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">ROM分区采用的是Linux内核支持的squashFS文件系统(一种压缩只读文件系统)，加载完毕后将其挂载到/rom目录(同时也挂载为根文件系统)。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">系统将使用JFFS2文件系统格式化rootfs_data这部分并且将这部分挂载到/overlay目录。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">将/overlay透明挂载为/分区。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">将一部分内存挂载为/tmp目录。
+								</li>
+							</ol>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">这个时候大家一定有一个问题：到底根文件系统是哪个？这个是OpenWRT设计的一个优点，它采用了一种叫Overlay透明挂载技术，首先将/rom挂载为/根文件，然后再用/overlay覆盖在/之上，这样，当你进行文件系统的变更，修改，所做的操作将在overlay中记录。rom是不改变的。而最简单的恢复出厂设置方法，即是删除掉/overlay下所有文件。</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/12.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">大致上而言，系统的启动流程类似CentOS这类x86下的发行版。由于本文读者多是熟悉linux的朋友，关于系统的启动流程不做详细解释了。</span>
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">基本指令
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">OpenWRT下系统的基本指令没有使用x86下的指令包，因为那些指令包容量太大。它使用的是Busybox项目。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">Busybox是一个集成了一百多个常用Linux命令和工具的软件包(OpenWRT下编译可以选择要哪些指令)。除了包含常规指令之外，Busybox还包含了grep、find、mount以及telnet、http等复杂工具。其被戏称为Linux下的瑞士军刀。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/21.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">通过列表大家可以看到，在bin下大部分都是软连接，这些软连接几乎都连接到Busybox中。是的，Busybox就是以检测用户执行的是什么名称来识别用户需要啥指令。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/31.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">hoowa要告诉大家，Busybox在80%的情况下与x86下的标准指令是完全相同的，有20%的情况一些指令的细节参数是不支持的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">常用来需要配置的文件夹和内容：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">/etc/ 存放着系统全部的配置文件<br />/etc/init.d/ 存放着启动的服务脚本<br />/etc/config/ 存放着OpenWRT的配置文件包括网络等等<br />/tmp/ 临时文件之外还存放着动态的配置文件<br />/tmp/TZ 就是系统启动后所使用的时区参数<br />.....
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">其它还有很多，我们就不一一介绍，用到哪个时再讲。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">让设备连入网络
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">以上已经完成后，可以将电脑与设备之间那根网线可以拔掉了。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">将你的外网网线插入M150开发版的WAN口(WAN口位置请参考<a href="http://www.leiphone.com/diy-a-smart-router-topic-install-system.html" target="_blank" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;">之前章节的介绍</a>)，这时系统将通过putty面板刷下屏，信息提示已插入网线。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">通过执行指令可以看到是否当前设备被分配了IP地址：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/316.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">其中eth1就是WAN口，获得IP地址表示已经连接上你的网络。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">从本节开始，到之后的讲解，所有的内容都要确保你的设备已经连接到网络上，确保能下载到指定的软件包。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;"><span style="font-size: 1.5em; line-height: 1.5em;">软件包管理</span></strong>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在OpenWRT下使用的软件包管理技术叫做OPKG，它是一个轻量级的软件包技术，已经成为开源嵌入式的事实标准，它类似CentOS下的yum，可以实现对预编译的二进制软件下载。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">输入opkg即可看到整个软件的完整帮助信息。语法格式：opkg [参数...] 子命令 [子参数...]，参数有:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">update 下载服务器上可用的软件包列表<br />upgrade &lt;包名&gt; 升级软件包<br />install &lt;包名&gt; 安装软件包<br />configure &lt;包名&gt; 配置某一个软件包<br />remove &lt;包名&gt; 卸载软件包<br />info [pkg|regexp] 显示出指定软件包的信息
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">系统命令远比我介绍的要多的多，而且这些命令是我们最常用的。本着深入浅出的态度，大家根据自己的能力，希望学更多的童鞋可以自己详细查看下opkg的帮助文档。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这里我们举例演示下下载usbutils软件包，该软件包是现实出当前USB总线上插入了什么设备。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">更新opkg的包列表，请注意，每次操作opkg下载之前都要先执行一次这个，确保包列表是同步的：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/413.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">安装usbutils包，OPKG会自动给你选择所依赖的其他包关系:
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/59.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这样就安装完成了，我们执行以下lsusb看USB总线现在有啥。安装后软件包会被保存在/overlay的分区中，不会丢失：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# lsusb
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">软件包内核依赖
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">请注意，这一节希望大家能永远记住。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在opkg安装的时候，有时候会有内核模块安装，这个时候某些情况下软件包安装不上，提示内核版本不匹配，错误大概是这样：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><strong style="font-style: normal; font-weight: bold;">root@OpenWrt:~# opkg install kmod-usb-storage</strong><br />Installing kmod-usb-storage (3.3.8-1) to root...<br />Downloading http://182.92.3.46/hoowa/openwrt/120901/ar71xx/packages/kmod-usb-storage_3.3.8-1_ar71xx.ipk.<br />Collected errors:<br />* satisfy_dependencies_for: Cannot satisfy the following dependencies for kmod-usb-storage:<br />* kernel (= 3.3.8-1-6acd2a17c333f503dc86081b03fe73c0) * kernel (= 3.3.8-1-6acd2a17c333f503dc86081b03fe73c0) *<br />* opkg_install_cmd: Cannot install package kmod-usb-storage.
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">请注意那句kernel (=.... 那句表示内核版本不匹配，产生这个的主要原因是教学固件在网上的内核升级了，唯一的解决办法就是重新刷固件。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在目前已有的内核模块教学固件中都已经编译为模块了，但是在本教程彻底完成之前，是有可能会重新产生内核的，因此请大家一定记住这个问题。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">OPKG配置：</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;"><a href="http://static.leiphone.com/uploads/2014/05/64.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a></span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">这里是列表出opkg的配置文件，其中第一句的URL地址是表示当前这台机器下载的二进制包所使用的服务地址，因为处理器指令集不一样，所以地址很丰富的。也就是说，你可以自己给自己的智能路由产品搭建一个软件包服务器。如果大家想知道有多少软件可以安装，就可以用你的浏览器直接访问那个地址，即可列表出全部的可用软件包。</span>
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">关于软件包
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在未来的章节中，我们将会再次介绍OPKG相关的内容，我们会介绍如何自己制作OPKG软件包，以及自己搭建OPKG服务器的步骤和方法。届时，你可以更容易的移植x86下的软件到OpenWRT中，也可以选择哪些软件包是要打到固件的ROM中、哪些是要动态安装的。
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

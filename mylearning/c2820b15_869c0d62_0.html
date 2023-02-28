@@ -1,0 +1,334 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(七)：路由联网
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-05-16 17:32
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：通过本章学习，大家将了解如何设置OpenWRT来使路由连接网络。
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); ">
+				<div class="wrapper clr" style="margin-top: 0px; margin-right: auto; margin-bottom: 0px; margin-left: auto; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; zoom: 1; width: 1130px; ">
+					<div class="article-left" style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; width: 740px; float: left; ">
+						<div class="lph-article-comView" style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 40px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; font-family: 'microsoft yahei'; line-height: 1.8; word-break: break-word; word-wrap: break-word; ">
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><span style="line-height: 1.5em;">这一章hoowa将向各位介绍OpenWRT下基本路由功能的配置方法，通过本章学习大家将了解如何设置OpenWRT来使路由连接网络，讲解将通过命令行模式。</span>
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><span style="line-height: 1.5em;">在系列教程中，hoowa不会教大家使用LUCI系统，LUCI是一个OpenWRT下的后台管理界面，界面较繁冗。本教程是面向广大Linux工程师和开发人员的教程，我们所针对的人员主要是有能力自己开发出比LUCI更强大的产品，后续的Area 4里我将教大家怎么搭建自己的WEB开发平台，用x86上常用的语言可以完全开发一个比LUCI更好用的界面。</span>
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">本章内容难度较高，组合也比较多，这是因为OpenWRT在网络部分设计的十分灵活，hoowa已经尽量减少内容来降低难度了，但为了保留OpenWRT强大的原汁原味，还是留了一些。从本章开始我们引入&quot;实例介绍&quot;分段，该部分将讲解一些具体的实例设置的方法。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">从本章开始，到后续章节将主要以实例上机操作为主，配置方式无外乎VI或UCI两种(关于VI或UCI的介绍请<a href="http://www.leiphone.com/diy-a-smart-router-topic-system-configuration.html" target="_blank" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;">参见第六章</a>)，希望各位读者能熟悉使用VI或UCI的操作方法，以便顺畅完成本章以及以后章节的操作内容。
+							</p>
+							<h2 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 24px; font-weight: bold; ">网络配置文件
+							</h2>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">作为智能路由的基本功能，网络部分主要是完成WAN口(连接互联网接口)、LAN口(连接局域网设备)、WIFI(无线传输)三部分的基本配置。这些配置都是以配置文件形式存在的。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">网络部分所涉及到的配置文件:
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="color: rgb(255, 0, 0);">/etc/config/network</span>：该文件是网络配置文件，该文件包含了WAN、LAN、LOOPBACK(本机自身回环网),VLAN(虚拟局域网)的全部配置。<br /><span style="color: rgb(255, 0, 0);">/etc/config/wireless</span>：无线网络的配置文件，该文件包含了无线网络的协议，参数，速率等信息。
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">在M150开发板上，WAN口在系统中就是eth1，LAN口就是eth0，这些定义在/etc/config/network中有所体现。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">查看配置文件内容：<br /><a href="http://static.leiphone.com/uploads/2014/05/89.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><span style="line-height: 1.5em;">其中，&apos;loopback&apos;表示本机自环网配置段，&apos;lan&apos;表示LAN口配置，&apos;wan&apos;表示WAN口配置，switch表示VLAN配置(虚拟局域网)，switch_vlan表示VLAN1的参数。</span>
+							</p>
+							<h2 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 24px; font-weight: bold; "><span style="line-height: 1.5em;">学会查看网络</span>
+							</h2>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">查看网络的命令，具备检测和视人当前配置情况，这些命令我们仅在这章做一次简单讲解。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">查看网络设备的方法:
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><a href="http://static.leiphone.com/uploads/2014/05/912.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">设备类型说明：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">br-lan：虚拟设备，用于LAN口设备桥接的，目前路由器普遍将有线LAN口(一般四个)和WIFI无线接口桥接在一起作为统一的LAN。<br />eth0：在M150上他是划分的VLAN。<br />eth1：在M150上他被划分成了WAN口。<br />lo：虚拟设备，本机自身回环网设备。<br />wlan0：实设备，当启动了wifi功能以后将产生此设备。<br />pppoe-wan：虚拟设备，在PPPOE拨号成功以后产生。
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">查看当前br-lan桥接的设备:
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# brctl show
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">查看VLAN的配置,这里可以查看到芯片中支持的网口配置情况，其中WAN口不在这里，Port 0是到CPU的接口：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# swconfig dev eth0 show
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">如果要查看系统的状态日志(包括了网络部分的状态日志)，执行以下命令可以看到：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# logread
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">查看无线的当前状态(需启动Wi-Fi，并安装iwinfo包)：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# opkg update<br />root@OpenWrt:~# opkg install iwinfo<br />root@OpenWrt:/# iwinfo
+								</p>
+							</blockquote>
+							<h2 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 24px; font-weight: bold; ">配置WAN口参数
+							</h2>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">请注意，设置WAN口的参数时候WAN口网线一定要在接入状态，否则即使重新启动系统WAN口设置也不会生效。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">WAN口是路由器用于连接外网的端口，WAN口可以被用于配置成为多种方式连接外网。修改WAN口配置主要操作/etc/config/network的interface &apos;wan&apos;段的配置信息。
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">配置文件结构<br />config interface &apos;wan&apos;<br />option ifname &apos;eth1&apos;<br />option proto &apos;协议类型&apos;<br />......
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">协议类型 可选参数：
+							</p>
+							<ul style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 20px; margin-left: 40px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+								<li style="margin: 0px; padding: 0px; list-style: disc;">static：静态获得IP地址。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">dhcp：通过外网DHCP服务器获得IP地址。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">pppoe：通过pppoe拨号获得IP地址，这个是国内运营商网络最常使用的。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">pptp：连接远程VPN服务器，未来章节将介绍。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">3g：连接3G/4G无线电话网络上网，未来章节将介绍。
+								</li>
+							</ul>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">下边我们就来讲解较常见的三种网络环境配置文件，分别是动态IP、静态IP、PPPOE拨号。（提示：以下都需要用vi或UCI进行操作，如果不记得的童鞋可以参照第六章。）
+							</p>
+							<h3 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 20px; font-weight: bold; ">动态获得外网IP(dhcp)
+							</h3>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">dhcp模式的 config interface &apos;wan&apos; 参数表
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">键 值 必须设置 说明<br />proto dhcp 是 dhcp表示为动态获得外网ip地址<br />ifname eth1 是 不要改变，否则wan口就跑到别的地方了<br />macaddr 字符串 否 设置当前这个设备的MAC地址，多用于MAC地址克隆需求。<br />mtu 数字 否 修改这个设备默认的MTU值。<br />reqopts 字符串 否 在向DHCP服务器发出请求时增加附加的DHCP信息<br />dns 字符串 否 使用指定的DNS列表里的地址，不通过DHCP获得DNS
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">举例：动态获得外网ip地址，并且变更自己的MAC地址
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config interface &apos;wan&apos;<br />option ifname &apos;eth1&apos;<br />option proto &apos;dhcp&apos;<br />option macaddr &apos;00:11:22:33:44:55&apos;
+								</p>
+							</blockquote>
+							<h3 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 20px; font-weight: bold; ">指定静态IP(static)
+							</h3>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">static模式的 config interface &apos;wan&apos; 参数表
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">键 值 必须设置 说明<br />proto static 是 static表示静态获得<br />ifname eth1 是 不要改变，否则wan口就跑到别的地方了<br />macaddr 字符串 否 设置当前这个设备的MAC地址，多用于MAC地址克隆需求。<br />mtu 数字 否 修改这个设备默认的MTU值。<br />ipaddr 字符串 是 固定设置的IP地址<br />netmask 字符串 是 所使用的子网掩码<br />gateway 字符串 否 所使用的网关,如果不设置就不能上外网了<br />broadcast 字符串 否 广播地址，如果不设置系统将自动产生<br />dns 字符串 否 使用指定的DNS列表里的地址，如果不填写就不能解析域名
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">举例：指定一个静态地址
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config interface &apos;wan&apos;<br />option ifname &apos;eth1&apos;<br />option proto &apos;static&apos;<br />option ipaddr &apos;192.168.0.2&apos;<br />option netmask &apos;255.255.255.0&apos;<br />option gateway &apos;192.168.0.1&apos;<br />option dns &apos;192.168.0.1&apos;
+								</p>
+							</blockquote>
+							<h3 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 20px; font-weight: bold; ">通过PPPOE拨号上网(pppoe)
+							</h3>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">在设置pppoe的时候要确保你的设备WAN口连接的外网具备PPPOE的服务器，比如小区宽带，或联上ADSL Modem。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">pppoe模式的 config interface &apos;wan&apos; 参数表
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">键 值 必须设置 说明<br />proto pppoe 是 表示pppoe拨号<br />ifname eth1 是 不要改变，否则wan口就跑到别的地方了<br />macaddr 字符串 否 设置当前这个设备的MAC地址，多用于MAC地址克隆需求。<br />mtu 数字 否 修改这个设备默认的MTU值。<br />username 字符串 是 设置拨号用的帐号<br />password 字符串 是 设置拨号用的密码<br />ac 字符串 否 设置使用指定的访问集中器进行连接(默认情况下不用设置)<br />service 字符串 否 设置连接的服务名称(默认情况下不用设置)<br />connect 文件名 否 自定义连接时候的执行外部脚本<br />disconnect 文件名 否 自定义断开连接时的外部执行脚本<br />demand 数字 否 设置等待多久没有活动就断开PPPOE连接<br />dns 字符串 否 使用指定的DNS列表里的地址，如果不填写就不能解析域名<br />pppd_options 字符串 否 用于pppd进程执行时候的附加参数
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">举例：设置拨号上网(下面是长城宽带的帐号格式)
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config interface &apos;wan&apos;<br />option ifname &apos;eth1&apos;<br />option proto &apos;pppoe&apos;<br />option username &apos;280000000000&apos;<br />option password &apos;21700000&apos;
+								</p>
+							</blockquote>
+							<h3 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 20px; font-weight: bold; "><span style="color: rgb(255, 0, 0);">实例介绍A</span><span>&nbsp;</span>：&quot;使用VI将WAN口配置成为DHCP模式&quot;
+							</h3>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第一步</strong>：使用vi打开配置文件，并且进入编辑模式
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# vi /etc/config/network
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第二步</strong>：直接删掉config interface &apos;wan&apos;段配置信息
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第三步</strong>：增加新的配置信息，内容参考本节介绍的格式填写
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config interface &apos;wan&apos;<br />option ifname &apos;eth1&apos;<br />option proto &apos;dhcp&apos;
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第四步</strong>：使用vi命令wq，保存对文件的修改并且退出
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第五步</strong>：重新启动网络
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# /etc/init.d/network restart
+								</p>
+							</blockquote>
+							<h3 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 20px; font-weight: bold; "><span style="color: rgb(255, 0, 0);">实例介绍B</span>： &quot;使用UCI将WAN口配置成为PPPOE模式&quot;
+							</h3>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">假设你的运营商宽带线已经直接接入到WAN口，并且给你的帐号为&quot;280000000000&quot;密码为&quot;21700000&quot;。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第一步</strong>：删除掉旧的配置
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci delete network.wan
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第二步</strong>：写入配置参数
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci set network.wan=interface<br />root@OpenWrt:~# uci set network.wan.ifname=&apos;eth1&apos;<br />root@OpenWrt:~# uci set network.wan.proto=&apos;pppoe&apos;<br />root@OpenWrt:~# uci set network.wan.username=&apos;280000000000&apos;<br />root@OpenWrt:~# uci set network.wan.password=&apos;21700000&apos;
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第三步</strong>：查看修改，确认是否跟自己想要的一样
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci changes
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第四步</strong>：保存修改
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci commit network
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; "><strong style="font-style: normal; font-weight: bold;">第五步</strong>：重新启动网络
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# /etc/init.d/network restart
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">PPPOE生效后，如果在WAN口中查找到了PPPOE服务端将进行拨号，拨号成功后执行ifconfig将查看到pppoe-wan这个设备，拨号时间根据服务商不同而不同，一般在30秒到5分钟之间。
+							</p>
+							<h2 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 24px; font-weight: bold; ">配置LAN口
+							</h2>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">请注意，LAN口不论有几个，在系统中的设备都是一个eth0。其实LAN口也可以像WAN那样多样化的配置，不过这里作为路由器这里LAN口我们的配置很简单。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">修改LAN口配置主要操作/etc/config/network的interface &apos;lan&apos;段的配置信息。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">配置文件结构<br />config interface &apos;lan&apos;<br />option ifname &apos;eth0&apos;<br />......<br />键 值 必须设置 说明<br />proto static 是 静态地址,LAN要动态就乱了.<br />ifname eth0 是 不要改变，否则lan口就跑到别的地方了<br />type bridge 是 必填桥模式<br />ipaddr 字符串 是 设置LAN的IP地址,用于局域网设备访问路由器<br />netmask 字符串 是 所使用的子网掩码<br />macaddr 字符串 否 设置当前这个设备的MAC地址。<br />ip6assign 字符串 否 IPv6相关，因IPv6在国内没有普及暂时忽略掉
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">举例：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config interface &apos;lan&apos;<br />option ifname &apos;eth0&apos;<br />option type &apos;bridge&apos;<br />option proto &apos;static&apos;<br />option ipaddr &apos;192.168.1.1&apos;<br />option netmask &apos;255.255.255.0&apos;
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">修改过lan配置建议同时重新启动dhcp服务：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# /etc/init.d/network restart<br />root@OpenWrt:~# /etc/init.d/dhcp restart
+								</p>
+							</blockquote>
+							<h2 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 24px; font-weight: bold; ">配置WIFI
+							</h2>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">在每个芯片的驱动中wifi部分配置稍微有所不同，在这里我们还是以M150开发作为讲解说明。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">在M150的核心板上已经具备了一个内置天线，其信号强度达到了可用标准，因此不必外接天线。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">修改WIFI配置主要操作/etc/config/wireless整个文件。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">wireless配置文件结构为
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config wifi-device<span style="color: rgb(255, 0, 0);"><span>&nbsp;</span>&apos;radio0&apos;</span><br />.....
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config<span>&nbsp;</span><span style="color: rgb(255, 0, 0);">wifi-iface</span><br />.....
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">其中，radio0设备是表示WIFI无线设备的配置参数
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">config wifi-device &apos;radio0&apos; 参数表<br />键 值 必须设置 说明<br />type mac80211 是 仅用于M150开发板，无线设备的类型必须是mac80211<br />channel 数字/auto 是 无线所使用的信道，可以填写数字1-13(模式CN中国)，或填写auto自动选择<br />hwmode 字符串 是 仅用于M150开发板，设置无线协议类型,可选参数: 11b, 11bg, 11g, 11ng, auto<br />path 字符串 是 仅用于M150开发板，CPU中无线部分芯片的内核信息路径位置,不可修改<br />ht_capab 列表值 是 仅用于M150开发板，指定现在Radio0的兼容性参数,有多个值,尽量不修改<br />htmode 字符串 是 仅用于M150开发板，设置HT通道频宽,可选值:<br />&quot;HT20&quot; 这个参数兼容性比较好<br />&quot;HT40-&quot; (只支持channel为5-13)<br />&quot;HT40+&quot; (仅支持channel为1-7)<br />disabled 数字 是 关闭无线是否生效，1表示关闭，0表示开启<br />noscan 数字 否 仅用于M150开发板，当htmode为HT40-或HT40+的时候这个值必须为1<br />country 字符串 否 仅用于M150开发板，设置国家，国家不同所支持的channel数量也不同，建议大家设置为CN表示中国。<br />txpower 数字 否 设置发射功率,支持的值为: 0 4 5 7-18 单位为dBm。<br />macaddr 字符串 否 设置当前这个设备的MAC地址。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">这部分radio0的配置跟芯片的关系很大，不同芯片也不一样，在这里hoowa给大家一个常用配置的例子，如果愿意鼓捣可以自己随便修改这个参数进行：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config wifi-device &apos;radio0&apos;<br />option type &apos;mac80211&apos;<br />option channel &apos;auto&apos;<br />option hwmode &apos;11ng&apos;<br />option path &apos;platform/ar933x_wmac&apos;<br />list ht_capab &apos;SHORT-GI-20&apos;<br />list ht_capab &apos;SHORT-GI-40&apos;<br />list ht_capab &apos;RX-STBC1&apos;<br />list ht_capab &apos;DSSS_CCK-40&apos;<br />option htmode &apos;HT20&apos;<br />option country &apos;CN&apos;<br />option disabled &apos;0&apos;
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">下边的wifi-iface则表示当前的无线配置参数
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">config wifi-iface 参数表<br />键 值 必须设置 说明<br />device radio0 是 捆绑哪个无线设备<br />network lan 是 桥接到的位置<br />mode ap 是 无线模式，参数为ap表示无线路由<br />ssid 字符串 是 设置无线的SSID(就是名字),尽量英文啊，中文不知道出啥乱码<br />hidden 数字 否 为1的情况下表示隐藏SSID<br />wmm 数字 否 是否开启WMM，WMM是一个无线媒体优先的参数，默认打开，为0表示关闭<br />encryption 字符串 是 加密类型，支持参数:<br />none 表示不加密<br />psk-mixed 表示WPA-PSK &amp; WPA-PSK2 &amp; Auto<br />psk-mixed+ccmp 表示WPA-PSK &amp; WPA-PSK2 &amp; AES<br />psk-mixed+tkip 表示WPA-PSK &amp; WPA-PSK2 &amp; TKIP<br />psk-mixed+tkip+ccmp 表示WPA-PSK &amp; WPA-PSK2 &amp; TKIP &amp; AES<br />key 字符串 否 只有在开启了加密类型之后需要设置的密码，密钥长度在8到64个ASCII字符范围之内。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">这部分比较常用，在这里hoowa举例一个常用的带密码的设置方法参考：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config wifi-iface<br />option device &apos;radio0&apos;<br />option network &apos;lan&apos;<br />option mode &apos;ap&apos;<br />option ssid &apos;SmartRouter&apos;<br />option encryption &apos;psk-mixed&apos;<br />option key &apos;hoowasun&apos;
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">重新启动无线使用指令wifi或使用network restart都可以：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# wifi<br />root@OpenWrt:~# /etc/init.d/network restart
+								</p>
+							</blockquote>
+							<h2 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 24px; font-weight: bold; ">配置DHCP服务
+							</h2>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">在Openwrt的基础软件包中也包含了一个DHCP服务，这个服务是给LAN上的连接设备提供IP地址分配服务的。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; line-height: 2; "><span style="color: rgb(49, 66, 78); ">该服务的名字叫</span><span style="color: #ff0000">dnsmasq</span><span style="color: #31424e">。默认dnsmasq已经可以完全达到服务要求了。因此如果你不想修改，可以暂时跳过本节。</span>
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">修改DHCP配置主要操作/etc/config/dhcp整个文件。
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">wireless配置文件结构为
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config dnsmasq<br />......
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config dhcp &apos;lan&apos;<br />......
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config dhcp &apos;wan&apos;<br />......
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config odhcpd &apos;odhcpd&apos;<br />......
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config dhcp &apos;wan6&apos;<br />......
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">config dnsmasq提供DHCP的服务参数,详细参数这里不列出,仅对几个说明:<br />键 值 必须设置 说明<br />domain lan 是 DNS的服务域，主要给予DHCP客户端<br />leasefile 字符串 是 用来保存DHCP客户端的IP地址申请记录的文件地址
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">config dhcp &apos;lan&apos;的几个重要参数说明：<br />键 值 必须设置 说明<br />interface lan 是 设置接入设备类型，这里lan表示全部来自LAN的设备，包括LAN口和WIFI<br />start 数字 是 分配IP地址开始范围，如果你的LAN地址是192.168.0.1那么这个就是192.168.0.100<br />limit 数字 是 分配IP地址的数量，结果等于start + limit不能超过IP地址可用量<br />leasetime 字符串 是 IP地址租用有效期，单位是h，12h表示12个小时
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">config dhcp &apos;wan&apos;的几个重要参数说明：<br />键 值 必须设置 说明<br />ignore 1 是 在WAN口上忽略掉DHCP服务，如果打开这个网络可就乱咯~~
+							</p>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">通过UCI或VI可以对以上几个参数进行修改，默认情况下不需要修改即可完成工作。如果修改请参考7.3、7.4、7.5的实例进行修改。
+							</p>
+							<h2 style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 24px; font-weight: bold; ">尾记
+							</h2>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">如果以上章节的修改将配置文件修改的乱了，大家可以从/rom中将出厂配置复制出来，比如/etc/config/network被你修改怀了，那么恢复的方法为：
+							</p>
+							<blockquote style="color: rgb(90, 90, 90); margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px; padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; border-left-width: 5px; border-left-style: solid; border-left-color: rgb(238, 238, 238); clear: both; ">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# cp /rom/etc/config/network /etc/config/
+								</p>
+							</blockquote>
+							<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 1em; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2; ">兄弟们我写的很辛苦，在我之前从来没有一篇教程系统的介绍OpenWRT，在下一章当中我们将介绍网络控制管理功能，包括：防火墙，DMZ，UPNP的设置方法。
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

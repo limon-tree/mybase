@@ -1,0 +1,218 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(八)：防火墙/DMZ/UPNP
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-05-18 08:30
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：这一章我们将深入介OpenWRT下的防火墙类功能。在OpenWRT下防火墙的默认行为已经可以满足路由器的需要，一般情况下也无需修改，所以本章作为了解阅读即可。
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在上一章，我们已经介绍了关于网络部分的配置，今天这章我们将深入介OpenWRT下的防火墙类功能。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在OpenWRT下防火墙的默认行为已经可以满足路由器的需要，一般情况下也无需修改，所以本章作为了解阅读即可。 如果想设置端口转发、uPNP等更多功能可以参考本章的配置方法进行设置。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">OpenWRT内置防火墙介绍
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">OpenWRT下的NAT、DMZ、Firewall rules都是由配置文件“/etc/config/firewall”进行控制管理的。此文件可以使用UCI进行控制，也可以用vi编辑器直接修改。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">而该文件最总会在/etc/init.d/firewall启动的时候由UCI进行解码并且生成iptables规则生效。因此使用者不需要了解iptables即可通过配置文件实现防火墙控制。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">防火墙的修改生效，需要重启防火墙执行以下指令：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# /etc/init.d/firewall reload
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">或执行：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# /etc/init.d/firewall restart
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">查看当前iptables的已启用策略语法为：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# iptables -L
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">防火墙的基本设置
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本节主要介绍了防火墙的基本策略和基本参数，其中默认值已经能很好的工作了，无需修改。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config defaults 防火墙默认参数表
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />input ACCEPT 是 设置INPUT链(chain)的过滤策略，可选值: ACCEPT 允许, REJECT 拒绝<br />output ACCEPT 是 设置OUTPUT链(chain)的过滤策略，可选值: ACCEPT 允许, REJECT 拒绝<br />forward REJECT 是 设置FORWARD链(chain)的过滤策略，可选值: ACCEPT 允许, REJECT 拒绝<br />syn_flood 1 是 是否启用防洪水攻击。 可选值: 0关闭，1启用<br />synflood_rate 字符串 否 设置SYN包传输洪水攻击检测比率值,默认为: 25 单位(包/秒)<br />synflood_burst 字符串 否 设置SYN包传输比率值识别洪水攻击，默认为: 50 单位(包/秒)<br />disable_ipv6 1 否 设置关闭掉IPv6的防火墙策略，可选值: 0忽略，1关闭
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这部分参考值既是系统默认的即可，无需修改：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config defaults<br />option syn_flood 1<br />option input ACCEPT<br />option output ACCEPT<br />option forward REJECT<br /># Uncomment this line to disable ipv6 rules<br /># option disable_ipv6 1
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config zone 用于WAN/LAN域(zone)的参数表
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />name 字符串 是 域，必须是唯一值，可选值: wan, lan<br />network 列表值 否 哪些接口被捆绑到这个域中，可选接口的名称,比如: lan, wan, wan6<br />input ACCEPT 否 设置INPUT链(chain)的过滤策略，可选值: ACCEPT 允许, REJECT 拒绝<br />output ACCEPT 否 设置OUTPUT链(chain)的过滤策略，可选值: ACCEPT 允许, REJECT 拒绝<br />forward ACCEPT 否 设置FORWARD链(chain)的过滤策略，可选值: ACCEPT 允许, REJECT 拒绝<br />masq 1 否 设置传输伪装,如果是WAN口必须为1<br />mtu_fix 1 否 设置MTU的MSS钳制,如果是WAN口请为1
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这部分配置也不需要做修改，参考:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config zone<br />option name wan<br />list network &apos;wan&apos;<br />list network &apos;wan6&apos;<br />option input REJECT<br />option output ACCEPT<br />option forward REJECT<br />option masq 1<br />option mtu_fix 1
+								</p>
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config zone<br />option name lan<br />list network &apos;lan&apos;<br />option input ACCEPT<br />option output ACCEPT<br />option forward ACCEPT
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config forwarding 路由转发参数表
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />src lan 是 设置转发来源<br />dest wan 是 设置转发目标
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这部分配置也不需要做修改，参考:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config forwarding<br />option src lan<br />option dest wan
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">防火墙的规则
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果在你的路由产品中需要开放“允许WAN口访问设备的特定端口”，可以设置本规则(比如开放WAN口允许SSH登入，或允许WAN口访问设备的FTP)，一般情况下无需设置。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">防火墙规则在/etc/config/firewall中可以有任意数量的规则，这些规则定义了数据传输的动作和行为是被允许还是拒绝。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">规则配置文件结构
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config rule<br />option name &apos;规则名称&apos;<br />.....
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config rule可选参数表:
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />name 字符串 是 设置当前这个rule的名称<br />target 字符串 是 设置防火墙动作,可选值: ACCEPT 许可, REJECT 拒绝, DROP 抛弃<br />src 字符串 否 数据源的zone域是哪个。可选值: wan / lan<br />src_ip 字符串 否 数据源的IP地址是哪个。<br />src_mac 字符串 否 数据源的MAC地址是哪个。<br />src_port 字符串 否 数据源的端口，可以是一个端口，或一个端口范围，但是必须同时指定了协议类型<br />proto 字符串 否 数据源的协议类型, 可选值: tcp, udp, tcpudp, udplit, icmp, esp, ah, sctp, 或all表示全部<br />dest 字符串 否 数据目标的zone域是哪个。可选值: wan / lan<br />dest_ip 字符串 否 数据目标的IP地址。<br />dest_port 字符串 否 数据目标的端口，可以是一个端口，或一个端口范围，但是必须同时指定了协议类型<br />family 字符串 否 数据的协议族，可选值: ipv4, ipv6, any
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">rule规则设置可以灵活，比如允许来自WAN口的ping，举例：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config rule<br />option name Allow-Ping<br />option src wan<br />option proto icmp<br />option icmp_type echo-request<br />option family ipv4<br />option target ACCEPT
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">比如，我们希望WAN口可以ssh到系统，那么举例：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config rule<br />option name wan-ssh<br />option src wan<br />option dest_port 22<br />option proto tcp<br />option target ACCEPT
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在firewall配置中有大量rule可以参考各位去学习配置方法。默认情况下的规则设置已经足够作为路由器使用。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">端口转发和DMZ
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">端口转发是路由产品中常见的配置，它允许使用者通过WAN口访问特定的端口转发给局域网的一台电脑设备(比如WAN口访问80端口(HTTP)将转发给局域网某台网站服务器)。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">端口转发也是在防火墙配置/etc/config/firewall中定义redirect段策略实现的。所有匹配的来源数据将根据目标设置转发到目标主机上。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">firewall配置中可以有多个redirect转发策略，默认是没有开放任何转发的，如果你需要转发请使用vi或UCI进行配置。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">规则配置文件结构
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config redirect<br />option name &apos;名称&apos;<br />....
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config redirect可选参数表：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />name 字符串 是 设置当前这个redirect的名称<br />src 字符串 是 转发源的zone域,一般转发都是转发从wan过来的访问<br />src_ip 字符串 否 转发源的IP地址指定<br />src_mac 字符串 否 转发源的MAC地址指定<br />src_port 字符串 否 转发源的端口指定<br />proto 字符串 否 转发源的协议类型, 可选值: tcp, udp, tcpudp, udplit, icmp, esp, ah, sctp, 或all表示全部<br />dest 字符串 是 转发目标的zone域<br />dest_ip 字符串 否 转发目标的IP地址指定<br />dest_mac 字符串 否 转发目标的MAC地址指定<br />dest_port 字符串 否 转发目标的端口指定
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">端口转发的可配置性十分灵活。比如我们将9020这个端口转发给内网一台服务器的80，举例：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config redirect<br />option name &apos;9020-80&apos;<br />option proto &apos;tcp&apos;<br />option src &apos;wan&apos;<br />option src_dport &apos;9020&apos;<br />option dest &apos;lan&apos;<br />option dest_ip &apos;192.168.1.100&apos;<br />option dest_port &apos;80&apos;
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">将电脑192.168.1.2设置DMZ隔离区，举例：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config redirect<br />option src wan<br />option proto all<br />option dest_ip 192.168.1.2
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">安装UPnP
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">UPnP是一种对等即插即用网络协议，主要用于视频，音频领域的传输协议，对使用者来说，打开UPnP之后可以增加迅雷等下载软件的下载速度。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">提示：UPnP服务开机启动会消耗一点CPU和内存资源。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第一步：安装必要的包
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">确保你的开发板已经连入互联网，并执行以下命令：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# opkg update<br />root@OpenWrt:/# opkg install miniupnpd
+								</p>
+							</blockquote>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第二步：配置UPnP参数
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">UPnP的配置参数在/etc/config/upnp当中。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config upnpd config的配置参数：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />enable_natpmp 1 是 开启NAT-PMP支持，1表示开启<br />enable_upnp 1 是 开启UPnP支持，1表示开启<br />secure_mode 1 是 安全模式，客户端只能给自己转发一个输入口<br />log_output 0 是 日志输出级别，0表示不输出日志，如果设置了将输出到syslog中<br />download 数字 是 允许来自wan口的数据输入带宽，单位是(KB/秒)。<br />upload 数字 是 允许输出到wan口的数据输入带宽，单位是(KB/秒)。<br />external_iface 字符串 是 外网的设备域，默认是wan<br />internal_iface 字符串 是 内网的设备域，默认是lan<br />port 数字 是 监听的端口<br />upnp_lease_file 文件名 是 的upnp客户端租用记录文件
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config perm_rule许可设置配置参数：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">键 值 必须设置 说明<br />action 字符串 是 设置是否许可：allow许可，deny不许可<br />ext_ports 字符串 是 外部端口范围<br />int_addr 字符串 是 IP地址，如果是0.0.0.0/0表示全部<br />int_ports 字符串 是 内部端口范围
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在安装UPnP的时候已经生成的/etc/config/upnp默认配置，如果要修改请使用vi或UCI对起进行修改。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第三步：设置miniupnpd开机启动
+							</h3>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# /etc/init.d/miniupnpd enable
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">设置完毕以后，下次开机即可驻留内存，使用/etc/init.d/miniupnpd start可以临时开启一次看看。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第四步：检测是否有效开启
+							</h3>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# netstat -lnp|grep miniupnpd
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果查看到监听的端口，表示开启完成。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">本章到这里就结束了，下章开始，我们将了解OpenWRT作为普通路由器的其它设置部分，包括时区、SSH远程登入服务等。感谢大家的耐心学习！
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><br />
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

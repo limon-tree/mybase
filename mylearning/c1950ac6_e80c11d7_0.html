@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(六)：系统基础配置
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-05-14 00:04
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：了解完Linux基础知识和OPKG软件包软件技术后，我们还需要学习如何进行文本、文件操作，这一章我们就来学习vi、SCP。
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在这一章当中，我们将介绍在OpenWRT系统下的编辑和配置的基础指令和操作知识，因为后续的章节主要用于介绍如何配置路由的相关功能，在配置的操作时我们需要掌握编辑和处理的方法。 本章中，编辑和配置的基础方法我们分为三种，三种方式都可以操作成功。分别为：
+							</p>
+							<ol style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">使用VI编辑器: 适合教学时直接修改配置文件。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">使用UCI进行编辑: 适合教学时使用，更适合用于自己开发的第三方程序修改配置文件。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: decimal;">使用SCP下载到本地编辑: 适合教学和系统的测试，文件通过SCP工具下载到本地修改，完成后再上传到服务器上(要注意使用Notepad++或editplus或ue这类支持unix格式文本文件编辑器)
+								</li>
+							</ol>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold; border-left: 6px solid rgb(234, 81, 51);">&nbsp;VI编辑器介绍
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">vi(Visual Interface)是Linux上最通用的标准编辑器，几乎99.99%的Linux发行版中都包含它。vi可以在不需要图形界面的情况下实现对文件的查看、修改、删除、查找、替换等众多功能。vi的操作，适用于通过串口直接修改文件，以及通过ssh远程登入系统修改文件。 在OpenWRT中，系统允许通过vi编辑器直接修改UCI配置文件，从而实现对系统的配置。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold; border-left: 6px solid rgb(234, 81, 51);">&nbsp;VI的操作方法
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在本节我们就简单的介绍下VI的基本操作方法。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">vi指令语法: vi [文件名]
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果指定的文件名不存在，将会在内存中自动创建一个空文件，等待保存时保存到磁盘上。如果文件名存在则将打开该文件。vi在打开文件后有两种工作模式：
+							</p>
+							<ul style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: disc;">vi指令模式: 在这个模式下，不能对文件做修改，指令输入内容在屏幕的左下方显示。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">vi编辑模式: 在编辑模式下，可以对文件内容进行修改，删减，或增加。在OpenWRT的系统下，我们可以输入键盘上的主键盘区内容，也可以使用上下左右箭头按键调整位置。
+								</li>
+							</ul>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">两种模式切换: 在指令模式下，按键盘上的字母&quot;i&quot;既进入编辑模式(insert方式)，这个时候可对文件进行修改编辑。在编辑模式下按键盘的esc键，即可返回指令模式，可以输入指令。 vi支持的指令列表,所有指令都要输入&quot;:&quot;作为指令开头，以回车作为指令结束：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">退出vi编辑器指令,放弃对文件的修改: :q! 退出vi编辑器: :q 保存当前内容: :w 保存退出: :wq 强制保存退出: :wq! 搜索字符: :/[字符内容]
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">操作举例：</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;"><a href="http://static.leiphone.com/uploads/2014/05/195.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a></span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">键盘输入 i&nbsp;进入编辑模式，然后可以</span>随便输入一些字符（这时已经可以写文字了）
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/338.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">保存退出：进入指令模式，输入保存退出指令<span style="color: rgb(255, 0, 0);">:wq</span><span>&nbsp;</span>该文件即保存。再次使用vi /tmp/test打开文件即可看到文件保存内容。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold; border-left: 6px solid rgb(234, 81, 51);">&nbsp;认识UCI
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">众所周知，在Linux下各种软件包有各种不同的配置脚本，每个配置脚本的语法格式和操作方式不同，这样的设计虽然可以体现出各软件包自身的优势，同时也增加了智能路由产品开发的难度。在这一点上OpenWRT下的UCI技术无疑是一种创新。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">UCI是(Unified Configuration Interface)集中式配置信息管理接口的缩写，他是OpenWRT引进的一套配置参数管理机制。UCI管理了OpenWRT下最主要的系统配置，并且提供了简单，容易，标准化的人机交互接口。UCI的管理包含了网络配置，无线配置，系统信息配置等作为路由器的系统主要配置参数。UCI可以帮助开发人员快速的开发出基于OpenWRT的智能路由产品的控制界面(诸如浏览器界面，手机界面等)。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在OpenWRT下有大量的软件包的配置实用了UCI兼容模式。大量的应用程序其实都有他们自己的配置文件，比如samba的配置文件默认是/etc/samba/samba.conf，但是在OpenWRT下samba软件包使用的配置方式也是UCI。当执行/etc/init.d/samba start的时候，启动脚本将通过UCI的shell解码器分析/etc/config/samba配置文件，并且生成需要的/etc/samba/samba.conf配置，来完成配置。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">OpenWRT下服务软件加载流程(samba举例):
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">启动脚本---&gt;/etc/config/samba(UCI解码器)---&gt;/etc/samba/samba.conf---&gt;启动samba服务
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">OpenWRT下配置处理流程(samba举例):
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">uci命令---&gt;UCI编解码器---&gt;/etc/config/samba
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">由于uci配置文件非常适合人机交互，因此如果你是需要人工修改配置，也可以简单的使用常见的vi编辑器直接修改配置:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">vi /etc/config/samba
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">默认的OpenWRT系统拥有以下几个配置文件，随着软件包的增加系统配置文件数量也会增加：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">dhcp 路由器的DHCP服务，面向LAN口下计算机提供IP地址分配服务 dropbear SSH服务 firewall 路由转发，端口转发，防火墙规则 fstab 外部存储器配置 network WAN / LAN 网络配置 system 时间服务器时区配置 wireless 无线网络配置
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold; border-left: 6px solid rgb(234, 81, 51);">&nbsp;UCI配置文件格式
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">UCI默认情况下只处理/etc/config中的配置文件，通过参数指定也可以让它来处理其它位置的配置文件。UCI的配置文件同XML不同(XML的设计更适应机器读取)，而UCI配置文件的设计对于人读取非常友好。所以即使你手工修改这些配置也是没有任何问题的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">UCI文件内容格式举例：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config &apos;example&apos; &apos;test&apos;<br />option &apos;string&apos; &apos;some value&apos;<br />option &apos;boolean&apos; &apos;1&apos;<br />list &apos;collection&apos; &apos;first item&apos;<br />list &apos;collection&apos; &apos;second item&apos;
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">从config开始一直到下一个config出现中间的内容表示一个段配置(以下均用Section表达)，其作用类似编程语言中的{}作用，是表示一个区域数据。</span>
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">Section开始语法: config &apos;类型&apos; &apos;名字&apos;
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">其中上面例子的example就是这个配置的类型，而test就是这个配置的名字。UCI允许&quot;匿名&quot;的配置存在所以可能存在只有&quot;类型&quot;而没有&quot;名字&quot;的配置。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">参数定义语法: option &apos;键&apos; &apos;值&apos;
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">option表示当前的配置中的键/值定义语法。上面例子定义了一个键为&apos;string&apos;，值为&apos;some value&apos;的配置参数。
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">列表定义语法: list &apos;集合名字&apos; &apos;值&apos;
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">list表示一种集合参数，UCI会根据相同集合名字生成一个数组(以上例子数据中包含&apos;first item&apos;和&apos;second item&apos;两个值)给予相应的软件包使用。 UCI允许的参数格式：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">option example value<br />option &apos;example&apos; value<br />option example &quot;value&quot;<br />option &quot;example&quot; &apos;value&apos;<br />option &apos;example&apos; &quot;value&quot;
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">当遇到上面错误的时候，UCI还是可以很好的工作，但是如果遇到下面的格式，UCI将出现问题：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">option &apos;example&quot; &quot;value&apos;<br />option example some value with space
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">还有一点非常重要：尽量使用常规字符去处理器UCI，特殊字符（ACSII标准之外）有可能会破坏数据结构的完整性。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold; border-left: 6px solid rgb(234, 81, 51);">&nbsp;UCI文件读写方式
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">UCI文件的读写有两种方式：
+							</p>
+							<ul style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: disc;">UCI文件的读写可以通过OpenWRT附带的uci指令来完成，这种读写方式可以用于命令行也可以用于自己开发的WEB程序来操作。
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">直接使用系统的vi编辑器直接修改UCI文件，所做的修改也可以被系统所识别。
+								</li>
+							</ul>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold; border-left: 6px solid rgb(234, 81, 51);">&nbsp;UCI指令读取配置
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">语法格式: uci [&lt;options&gt;] &lt;command&gt; [&lt;arguments&gt;] 查看类语法：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">uci get &lt;config&gt;.&lt;section&gt;[.&lt;option&gt;] 取得一个键的值 或根据段的名字取得类型<br />uci show [&lt;config&gt;[.&lt;section&gt;[.&lt;option&gt;]]] 显示出全部 / 配置文件 / 段 / 键 的完整格式<br />uci changes [&lt;config&gt;] 显示出全部 / 配置文件 的未保存修改(经过commit语法保存后就不再有记录)
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">变更类语法：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">uci add &lt;config&gt; &lt;section-type&gt; 增加一个匿名段配置到配置文件中<br />uci set &lt;config&gt;.&lt;section&gt;[.&lt;option&gt;]=&lt;value&gt; (增加/修改)一个有名字的段 / 增加一个段中的键和值<br />uci add_list &lt;config&gt;.&lt;section&gt;.&lt;option&gt;=&lt;string&gt; 增加一个列表集合数据到配置文件中<br />uci del_list &lt;config&gt;.&lt;section&gt;.&lt;option&gt;=&lt;string&gt; 删除一个指定值的列表集合数据<br />uci delete &lt;config&gt;[.&lt;section&gt;[[.&lt;option&gt;][=&lt;id&gt;]]] 删除一个 段 / 键 / 指定值的键<br />uci commit [&lt;config&gt;] 将变更保存在文件中，或保存全部变更到各自文件
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">UCI在读取的时候优先显示内存中的缓存，其次显示文件中的。UCI在进行变更的时候只变更内存的，如果要使变更生效需要执行commit将其写入文件。<span>&nbsp;</span></span><span style="line-height: 1.5em;">来举个例子。首先产生一个用来做测试的样本测试:</span>
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# cp /etc/config/system /etc/config/mytest
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">查看当前状态:</span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;"><a href="http://static.leiphone.com/uploads/2014/05/433.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a></span>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">取出mytest.ntp.server的值:
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/518.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">增加一个名为mytest类型为hello的段到mytest文件中:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci set mytest.mytest=hello
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">增加一个配置到这个段中:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci set mytest.mytest.enable=1
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">修改mytest.@system[0].hostname这个参数:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci set mytest.@system[0].hostname=hoowa
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">删除掉一个ntp.server的值:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci del_list mytest.ntp.server=2.openwrt.pool.ntp.org
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">查看都修改了啥:
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/614.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">保存修改:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:~# uci commit mytest
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">看看文件有啥变化:
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/77.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">举例，开启wifi功能:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# uci set wireless.radio0.disabled=0<br />root@OpenWrt:/# uci commit wireless
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">让wifi开启生效:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# wifi
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold; border-left: 6px solid rgb(234, 81, 51);">&nbsp;使用SCP进行文件传输
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">SCP(Secure copy)是OpenWRT中的SSH附带的文件传输功能，SCP在操作上类似FTP可以实现一个安全的数据文件传输。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">SCP适用于调试阶段的程序文件上下载，从而进行快速测试，这是个非常不错的工具。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第一步：正式开放SSH
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在默认的情况下由于没有密码，所以SSH无法登入。首先修改系统超级账户密码，在提示中填写两次新密码:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# passwd
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">完成后重启SSH的服务:
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@OpenWrt:/# /etc/init.d/dropbear restart
+								</p>
+							</blockquote>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第二步: 安装WinSCP
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">大家可以使用一个winscp的工具实现这个操作。winscp工具已经放在了教学服务器上，下载地址为http://182.92.3.46/hoowa/openwrt/tools/winscp439setup.zip。安装这个工具软件，然后让你的电脑连接到开发板的wifi上(在上边案例中，你已经开启过wifi了，对吗？)，同时打开软件。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第三步: 点击新建
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/85.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">主机名填写IP地址，默认的开发板是192.168.1.1<br />端口填写22<br />用户名填写root<br />密码就填写刚才设置的那个密码<br />文件协议选择SCP
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">点击连接， 连接过程中有提示找不到group指令，没关系直接确认就行了。
+							</p>
+							<h3 style="margin: 20px 0px 15px; padding: 0px; font-size: 20px; font-weight: bold;">第四步：文件处理
+							</h3>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">登入后，操作起来就像FTP工具一样，左侧是你的电脑，右侧是开发板系统，你可以上载下载文件。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/99.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在本章，我们介绍了三种进行配置编辑的方法，请选择其中一种最为你进行后续操作所使用的方式即可。其他的用到了再回来学习也可以的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">到这里，我们在硬件部分的第一次操作基本完成，接下来将进入软件环节，来学习如何配置出一个具备完整功能的路由系统来。
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

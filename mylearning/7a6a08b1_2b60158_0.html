@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div><span style="color: #cc99ff; font-family: Tahoma"><br /></span>
+		</div>
+		<div><span style="color: #cc99ff; font-family: Tahoma"><br /></span>
+		</div>
+		<div><span style="font-family: Tahoma; color: #993400">svn log -l 2 -v&nbsp; -r 1387</span>
+		</div>
+		<div><span style="font-family: Tahoma; color: #993400">查看日志</span>
+		</div>
+		<div><span style="font-family: Tahoma; color: #993400"><br /></span>
+		</div>
+		<div><span style="font-family: Tahoma; color: #993400"><br /></span>
+		</div>
+		<div><span style="font-family: Tahoma; color: #993400">递归将add或者删除等文件操作撤销,撤销当前修改,(恢复到服务器上的状态)</span>
+		</div>
+		<div><span style="font-family: Tahoma; color: #993400">svn revert -R .</span>
+		</div>
+		<div>
+		</div>
+		<div><span style="font-family: Tahoma; color: #993400"><br /></span>
+		</div>
+		<div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">提交修改
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn commit -m &quot;&quot;
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn commit -m &quot;abc&quot; a.c b.c filename
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn commit 用于提交代码的修改-m 是message意思，用于在&quot;&quot;中写本次上传原因。
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">如果有需要添加文件的需要首先执行如下命令：
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn add filename
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">其中add为增加的意思,filename为要增加的文件夹名。
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">上传库以及隐藏文件
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn add --no-ignore --force 
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn add * --no-ignore --force
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">该命令强制上传所有文件。
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">删除命令
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn rm filename
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">rm为删除命令filename为要删除的文件。
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">更新到指定版本
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn up -r 版本号
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">将add或者删除等文件操作撤销
+			</div>
+			<div><span style="font-family: Tahoma; color: #993400">svn revert --recursive filename</span>
+			</div>
+			<div><span style="font-family: Tahoma; color: #993400"><br /></span>
+			</div>
+			<div><span style="font-family: Tahoma; color: #993400">导出单个文件</span>
+			</div>
+			<div><span style="font-family: Tahoma; color: #993400">svn export url</span>
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">去掉目录的写权限
+			</div>
+			<div>
+				<div><span style="font-family: Tahoma; color: #993400">sudo find . &nbsp;-type d | grep -v &quot;.svn&quot; | xargs sudo chmod a-w</span>
+				</div>
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">修改目录拥有者
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">chown www vtss_appl
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">find /opt/mscc/&nbsp; -type f -name &quot;*.h*&quot; | xargs grep -r -n &quot;^typedef&quot; | grep &quot;uint32_t.$&quot;
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">
+				<div>更新次数
+				</div>
+				<div>svn log -r {2018-1-1}:{2018-12-31} | grep &quot;\|&quot; | awk &apos;{print $3}&apos; | wc -l
+				</div>
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">po -&gt; mo
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">msgfmt demo.po -o demo.mo
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">msgunfmt demo.mo -o demo.po
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">windows 环境下需要 gettextlib.dll, gettextsrc.dll, iconv.dll, ubtk.dll, msgfmt.exe
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; ">svn log 获取解决问题和特性开发列表 在导入exel/csv
+			</div>
+			<div style="font-family: Tahoma; ">1. 导出指定时间日志的xml文件格式，便于我们解析
+			</div>
+			<div style="font-family: Tahoma; ">svn log -r {2020-1-1}:{2021-12-31} --xml &gt; svnlog.xml
+			</div>
+			<div style="font-family: Tahoma; ">2. 写一个python脚本，解析xml文件为csv格式
+			</div>
+			<div style="font-family: Tahoma; ">
+				<pre>
+<code id="ID_17E336F5F1D" class="hljs xl">#coding:utf-<span class="hljs-number">8</span>
+<span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">import</span> hashlib
+<span class="hljs-keyword">import</span> struct
+<span class="hljs-keyword">import</span> sys
+<span class="hljs-keyword">import</span> gzip, io
+
+<span class="hljs-keyword">import</span> xml.etree.ElementTree <span class="hljs-keyword">as</span> ET
+
+<span class="hljs-keyword">tree</span> = ET.parse(<span class="hljs-string">"svnlog.xml"</span>)
+
+#根节点
+root = <span class="hljs-keyword">tree</span>.getroot()
+
+#标签名
+print(<span class="hljs-string">'root_tag:'</span>, root.tag)
+<span class="hljs-keyword">for</span> <span class="hljs-built_in">log</span> <span class="hljs-built_in">in</span> root:
+    #属性值
+    print(<span class="hljs-string">"name:"</span>, <span class="hljs-built_in">log</span>.attrib[<span class="hljs-string">"revision"</span>])
+    #标签中内容
+    print(<span class="hljs-string">"author:"</span>,<span class="hljs-built_in">log</span>[<span class="hljs-number">0</span>].<span class="hljs-keyword">text</span>)
+    print(<span class="hljs-string">"date:"</span>,<span class="hljs-built_in">log</span>[<span class="hljs-number">1</span>].<span class="hljs-keyword">text</span>)
+    print(<span class="hljs-string">"msg:"</span>,<span class="hljs-built_in">log</span>[<span class="hljs-number">2</span>].<span class="hljs-keyword">text</span>)
+    </code></pre>
+			</div>
+			<div style="font-family: Tahoma; ">3. TODO,指定msg的识别与提取（如bug、特性）
+			</div>
+			<div style="font-family: Tahoma; "><br />
+			</div>
+			<div style="font-family: Tahoma; "><br />
+			</div>
+			<div style="font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+			<div style="color: rgb(153, 52, 0); font-family: Tahoma; "><br />
+			</div>
+		</div>
+		<div>
+		</div>
+		<div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

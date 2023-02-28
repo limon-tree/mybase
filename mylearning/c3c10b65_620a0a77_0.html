@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" type="text/css" href="21a71439_1a20045d_0.css" />
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div>转自：http://mp.weixin.qq.com/s?__biz=MzAxNTAyOTczMw==&amp;mid=2649328035&amp;idx=1&amp;sn=7d3935cc05d31a494b8255c692afac16&amp;scene=0#wechat_redirect
+			</div>
+			<div><br />
+			</div>
+			<div><br />
+			</div>
+			<div>在购买开发板的时候，板子上已经烧写好了bootloader、内核和文件系统。但是在具体使用的时候，发现板子上划分的内核分区只有2M，但是我编译出来的内核大于2M，于是将内核烧写到nandflash上面时会启动不成功。怎么办呢？后来经过查找资料，找到了解决办法。
+			</div>
+			<div>修改这两个文件：
+			</div>
+			<div><br />
+			</div>
+			<div>①u-boot-1.1.6/include/configs/100ask2440.h
+			</div>
+			<div><br />
+			</div>
+			<div>如果是别的类型的板子，就会找不到这个文件。不过大致路径是没错的，可以先使用以下命令搜索
+			</div>
+			<div><br />
+			</div>
+			<div>
+				<pre style="padding: 8px;">
+<code></code><p style="margin:0px;"><code><span style=" font-weight:600; color:#204a87;">find</span> ./ -name <span style=" font-weight:600; color:#2e8b57;">"*"</span> | <span style=" font-weight:600; color:#204a87;">xargs</span> <span style=" font-weight:600; color:#204a87;">grep</span> <span style=" font-weight:600; color:#2e8b57;">"2m(kernel)"</span></code></p></pre>
+			</div>
+			<div><br />
+			</div>
+			<div><br />
+			</div>
+			<div>也就是说在当前目录及其子目录下查找文件内容中包含2m(kernel)的文件，这样就可以很快的定位到要修改的文件了。找到文件并且用VI打开文件后，在命令行模式用命令
+			</div>
+			<div><br />
+			</div>
+			<div>/MTDPARTS_DEFAULT
+			</div>
+			<div><br />
+			</div>
+			<div>找到以下内容
+			</div>
+			<div>
+				<div><br />
+				</div>
+				<pre>
+<code id="ID_17467310F6C" class="hljs gcode"><ol><li><span class="hljs-attr">#define MTDPARTS_DEFAULT "mtdparts=nandflash0</span>:<span class="hljs-number">256</span>k@<span class="hljs-number">0</span><span class="hljs-comment">(bootloader)</span>,<span class="hljs-string">" \</span></li><li>                            "<span class="hljs-number">128</span>k<span class="hljs-comment">(params)</span>,<span class="hljs-string">" \</span></li><li>                            "<span class="hljs-number">2</span>m<span class="hljs-comment">(kernel)</span>,<span class="hljs-string">" \</span></li><li>                            "-<span class="hljs-comment">(root)</span><span class="hljs-string">"</span></li></ol></code></pre>
+				<div><br />
+				</div>
+			</div>
+			<div><br />
+			</div>
+			<div><br />
+			</div>
+			<div><br />
+			</div>
+			<div>将上边的内核大小改成4m差不多就够用了。修改后重新编译u-boot。
+			</div>
+			<div><br />
+			</div>
+			<div>②(可选)内核中也有类似的一个文件common-smdk.c ,找之前最好先搜索一下，不同版本的内核，这个文件的位置可能不同。搜索命令：
+			</div>
+			<div>locate common-smdk.c
+			</div>
+			<div><br />
+			</div>
+			<div>或者
+			</div>
+			<div><br />
+			</div>
+			<div>
+				<pre style="padding: 8px;">
+<code></code><p style="margin:0px;"><code><span style=" font-weight:600; color:#204a87;">find</span>  ./ -name common-smdk<span style=" font-weight:600; color:#4682b4;">.</span>c</code></p></pre>
+			</div>
+			<div><br />
+			</div>
+			<div>我的内核版本 Linux-3.4.2，此文件在arch/arm/mach-s3c24xx/common-smdk.c。
+			</div>
+			<div><br />
+			</div>
+			<div>打开文件后找到以下内容，红色部分就是nandflash的分区大小，可以根据需要修改
+			</div>
+			<div>
+				<pre>
+<code id="ID_17467316526" class="hljs nix"><ol><li>static struct mtd_partition smdk_default_nand_part[] = {</li><li></li><li>        [<span class="hljs-number">0</span>] = {</li><li>                .<span class="hljs-attr">name</span>        = <span class="hljs-string">"bootloader"</span>,</li><li>                .<span class="hljs-attr">size</span>        = SZ_256K,</li><li>                .<span class="hljs-attr">offset</span>        = <span class="hljs-number">0</span>,</li><li>        },</li><li></li><li>        [<span class="hljs-number">1</span>] = {</li><li>                .<span class="hljs-attr">name</span>        = <span class="hljs-string">"params"</span>,</li><li>                .<span class="hljs-attr">offset</span> = MTDPART_OFS_APPEND,</li><li>                .<span class="hljs-attr">size</span>        = SZ_128K,</li><li>        },</li><li></li><li>        [<span class="hljs-number">2</span>] = {</li><li>                .<span class="hljs-attr">name</span>        = <span class="hljs-string">"kernel"</span>,</li><li>                .<span class="hljs-attr">offset</span> = MTDPART_OFS_APPEND,</li><li>                .<span class="hljs-attr">size</span>        = SZ_2M,</li><li>        },</li><li></li><li>        [<span class="hljs-number">3</span>] = {</li><li>                .<span class="hljs-attr">name</span>        = <span class="hljs-string">"rootfs"</span>,</li><li>                .<span class="hljs-attr">offset</span>        = MTDPART_OFS_APPEND,</li><li>                .<span class="hljs-attr">size</span>        = MTDPART_SIZ_FULL,</li><li>        }</li><li>};</li></ol></code></pre>
+			</div>
+			<div><br />
+			</div>
+			<div>修改之后，重新编译下载内核即可。U-BOOT启动时可用mtd命令来查看分区是否生效。我的分区表如下所示：
+			</div>
+			<div><br />
+			</div>
+			<div><br />
+			</div>
+			<div><br />
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>

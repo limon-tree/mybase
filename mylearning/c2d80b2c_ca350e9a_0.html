@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<style>
+			table{border-collapse: collapse; border: 1px solid gray; border-width: 2px 1px 2px 1px;}
+			th{border: 1px solid gray; padding: 4px; background-color: #ddd;}
+			td{border: 1px solid gray; padding: 4px;}
+			tr:nth-child(2n){background-color: #f8f8f8;}
+			pre{border: 2px solid #d6d6d6; padding: 0px; border-radius: 3px;}
+		</style>
+	</head>
+	<body style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; ">
+		<div>
+			<div class="article-title" style="margin: 0px; padding: 0px 0px 30px; background: rgb(235, 235, 235); border-bottom: 1px solid rgb(227, 227, 227); color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="inner" style="margin: 0px auto; padding: 0px; width: 800px; position: relative;">
+					<h1 class="headTit" style="margin: 0px auto; padding: 35px 0px 25px; font-size: 23px; font-weight: bold; width: 680px; color: rgb(49, 66, 78); text-align: center; line-height: 40px;">【硬创邦】跟hoowa学做智能路由(九)：时区/服务/SSH
+					</h1>
+					<div class="msg" style="margin: 0px; padding: 0px;">
+						<table style="border-collapse: collapse; border-spacing: 0px; font-size: 14px; margin: 0px auto;">
+							<tbody>
+								<tr>
+									<td class="aut" style="margin: 0px; padding: 0px 25px; text-align: center; font-size: 14px; color: rgb(94, 107, 115);">本文作者：<a href="https://www.leiphone.com/author/hoowa" target="_blank" rel="nofollow" style="text-decoration: none; color: rgb(94, 107, 115); border: 0px; font-size: 14px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.3s ease-in;">孙冰</a>
+									</td>
+									<td class="time" style="margin: 0px; padding: 0px 25px; text-align: center; color: rgb(155, 170, 182);">2014-05-22 01:36
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="article-lead" style="margin: 0px; padding: 20px 0px 0px 20px; position: relative; color: rgb(136, 150, 161); line-height: 24px; font-size: 14px; width: 740px; text-align: center;"><em style="font-style: normal; font-weight: normal; background: url('../../images/common/yp_spirit.png') -18px -497px no-repeat; width: 24px; height: 19px; display: inline-block; vertical-align: -2px; margin-right: 10px;"></em>导语：在第三部分Area 3部分，路由器的基础功能已经讲了很多，这些部分组成了一款可用的路由器。本章将继续介绍余下的一些常用系统配置
+					</div>
+				</div>
+			</div>
+			<div class="info" style="margin: 0px; padding: 0px; color: rgb(51, 51, 51); font-family: 'microsoft yahei', Arial; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(247, 247, 247); text-decoration-style: initial; text-decoration-color: initial;">
+				<div class="wrapper clr" style="margin: 0px auto; padding: 0px; zoom: 1; width: 1130px;">
+					<div class="article-left" style="margin: 0px; padding: 0px; width: 740px; float: left;">
+						<div class="lph-article-comView" style="margin: 0px; padding: 40px 0px 0px; font-size: 16px; font-family: 'microsoft yahei'; color: rgb(90, 90, 90); line-height: 1.8; word-break: break-word; word-wrap: break-word;">
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><span style="line-height: 1.5em;">在第三部分Area 3部分，路由器的基础功能已经讲了很多，这些部分组成了一款可用的路由器。本章将继续介绍余下的一些常用系统配置。</span>
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">系统信息和时区
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">我们大家知道电脑重新开机后时间都保留着，那是因为我们的主板上有电池和时间芯片，一般该芯片是达拉斯品牌的。在传统路由器上是没有时间芯片和电池的(传统的路由器也不需要)，因为那些路由器只是个功能路由，时间没什么作用。可是智能路由中可能需要这个功能，至少如果有数据库，数据库记录数据的时间总要正确吧。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在OpenWRT下我们解决这个问题普遍是采用的是通过NTP服务向时间授权服务器发出请求要求提供时间服务。根据本地的时区配置，反应称为本地时间。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在/etc/config/system中配置有时区的参数。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config system 系统参数表<br />键 值 必须设置 说明<br />hostname 字符串 是 主机名称，要设置啊<br />timezone 字符串 是 时区设置，参考附录: 时区表, 中国填写: CST-8
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">举例参考：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config system<br />option hostname SmartRouter<br />option timezone CST-8
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config timeserver 时区服务器参数表<br />键 值 必须设置 说明<br />server 列表值 是 NTP服务器地址<br />enable_server 数字 是 开启模式，值: 0 表示只作为客户端获取远端时间， 1 表示作为中继模式，从远端NTP服务器获得时间，为本地的设备提供NTP服务。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">举例参考，这里第一个服务器使用了教程服务器提供的NTP服务：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config timeserver ntp<br />list server 182.92.3.46<br />list server 0.openwrt.pool.ntp.org<br />list server 1.openwrt.pool.ntp.org<br />list server 2.openwrt.pool.ntp.org<br />option enable_server 0
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">重新启动系统后会生成/tmp/TZ这个文件，新时区生效：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# reboot
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">以上的182.92.3.46是本次教学的定制版系统下载服务器(该服务器具备NTP服务)，你可以根据实际需要来使用ntp服务器地址，通过查看系统时间指令可以确定是否取得了时间：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# date
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">有的时候，有的NTP服务器连接不上，尤其是海外的，因此可能得到的时间有快有慢。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">进程和服务
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在OpenWRT系统下有大量的服务进程，通过列表即可看到：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# ls /etc/init.d/
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">这些进程都可以进行复杂控制，直接执行这些进程可以看到可选参数，在这里我们以网络部分的服务network举例：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# /etc/init.d/network
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">语法: /etc/init.d/network [指令]
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">可用指令:<br />start 立即启动服务<br />stop 立即停止服务<br />restart 立即重新启动服务<br />reload 重新读取该服务的配置信息<br />enable 开机自动启动<br />disable 禁用开机自动启动<br />killclients 清楚掉已连接上来的客户端
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">通过以上参数执行，即可达到所需效果。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">比如，启动network服务：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# /etc/init.d/network start
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">比如，重新启动network服务：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# /etc/init.d/network restart
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">系统中的服务有很多，大家刚才也看到列表了，那么这些服务的作用我们不一一讲解，还是那句话，用到哪个说哪个。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">SSH配置
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">SSH(Secure Shell)是Linux系统中标配的远程命令管理协议，通过SSH即可访问系统的完整shell权限，其作用类似我们进行的串口登陆。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">同时，我们在之前章节所讲过的SCP文件管理的技术，也是基于SSH实现的，在我们的系统中SSH默认已经存在了。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">SSH的进程管理有点特殊，默认情况下要对系统的超级用户(root)设置密码后才可以启动，设置语法我们再温习一次，新密码根据提示输入两次，如果两次匹配则生效：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# passwd
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">SSH在系统中的配置文件为/etc/config/dropbear
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config dropbear 参数表<br />键 值 必须设置 说明<br />enable 数字 是 是否开启SSH服务，值: 1 开启，0 禁用<br />PasswordAuth 字符串 是 登入是否需要密码，值: on / 1 表示需要，0 禁用<br />RootPasswordAuth 字符串 是 允许root密码方式登入，值: on / 1 表示允许， 0 禁用<br />RootLogin 字符串 否 允许root登入，值: 1 允许， 1 禁用<br />BannerFile 字符串 否 登入后显示的欢迎信息，默认直接读取/etc/banner<br />Port 数字 是 设置SSH的端口，范围在10-65535 不要跟别的端口冲突了啊
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">举例：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">config dropbear<br />option PasswordAuth &apos;on&apos;<br />option RootPasswordAuth &apos;on&apos;<br />option Port &apos;22&apos;<br /># option BannerFile &apos;/etc/banner&apos;
+								</p>
+							</blockquote>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">SSH的默认配置已经达到要求了，因此不用做修改可以服务，如果需要修改就在修改完成后重新启动/etc/init.d/dropbear这个服务以生效：
+							</p>
+							<blockquote style="margin: 20px; padding: 5px 10px; border-left: 5px solid rgb(238, 238, 238); clear: both;">
+								<p style="margin: 0px; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">root@SmartRouter:/# /etc/init.d/dropbear restart
+								</p>
+							</blockquote>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">使用putty远程登入SSH
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">到现在为止，我们使用的都是putty这个工具通过串口控制系统，其实OpenWRT完全可以像标准的Linux系统那样直接通过SSH远程登入的。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">上一节我们已经启动了SSH的服务。那么现在我们使用putty直接登入设备的SSH端口。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">请注意，OpenWRT默认是对WAN口实行防火墙管制的，SSH的端口一定是在关闭状态下，为了使用方便，我建议各位这个时候可以使用你的电脑直接通过WIFI或有线连接到LAN口上。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在putty填写内容大致如下：
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;"><a href="http://static.leiphone.com/uploads/2014/05/9-a.jpg" style="text-decoration: none; color: rgb(237, 85, 101); border: 0px; font-size: 16px; margin: 0px; padding: 0px; vertical-align: baseline; transition: all 0.2s ease-out;"></a>
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">填写完毕后点击Open即可通过SSH连接到你的设备上。然后填写帐号root，密码就是你上一章设置过的密码。点击确认就可以登入。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果这样登入OK，那么以后的章节，你就可以不用一直插着串口线拉(当然如果能插着也是不错的选择)。
+							</p>
+							<h2 style="margin: 20px 0px 15px; padding: 0px; font-size: 24px; font-weight: bold;">Area 3尾记
+							</h2>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">在整个第三部分Area 3中，hoowa向大家介绍了OpenWRT作为普通的基本路由器的配置和使用方法。这部分有很多东西是需要大家记下来的，这些都作为基础存在，Area 3可能显得有些枯燥，但是为了美好的Area 4那么多可以玩的地方，这部分必须要七七八八啃的差不多。
+							</p>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">如果Area3操作完成以后，你的局域网向下面这样了，说明你学的基本OK了：
+							</p>
+							<ul style="margin: 20px 0px 20px 40px; padding: 0px;">
+								<li style="margin: 0px; padding: 0px; list-style: disc;">小猫情况: 你的电脑--wifi---&gt;M150开发板---&gt;你上网的路由器---&gt;外网
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;">大老虎情况: 你的电脑--wifi---&gt;M150开发板---&gt;外网
+								</li>
+								<li style="margin: 0px; padding: 0px; list-style: disc;"><span style="line-height: 1.5em;">喵星人情况: 你的电脑（lan(不设置网关, 192.168.1.X网段)）---wifi-----&gt;你上网的路由器(M150开发板，192.168.100.X网段)</span>
+								</li>
+							</ul>
+							<p style="margin: 0px 0px 1em; padding: 0px; font-size: 16px; color: rgb(49, 66, 78); line-height: 2;">其实，Area 3的教学目的我们已经说明，就是让你首先的拿开发板变成一个路由器。感谢大家！
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+<script type="text/javascript" language="javascript" src="jquery.js"></script>
+<script type="text/javascript" language="javascript" src="itemlink.js"></script></body>
+</html>
