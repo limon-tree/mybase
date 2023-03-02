@@ -32,7 +32,7 @@ VALN标签由TPID和TCI两部分构成,其中TCI中包含了3个字段:PRI,CFI,V
   4. VALN标识(VALN identifier,VALN ID):12位,取值0~4095,就是VLAN标签.结合交换机端口的VLAN配置,能够控制以太网帧的转发.
  VLAN技术的出现,使得现在的交换网络环境中存在两种报文:没有加上VLAN标记的标准以太网帧(Untagged frame)和有VALN 标记的以太网帧(Tagged frame).
 
-![](C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\vlan.png)
+
 
 ### 1.1.2 VLAN的划分方式
 
@@ -70,7 +70,7 @@ VALN标签由TPID和TCI两部分构成,其中TCI中包含了3个字段:PRI,CFI,V
 
     
 
-![](C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\协议vlan.png)
+
 
 #### 1.1.2.5 Voice VLAN
 
@@ -80,7 +80,7 @@ VALN标签由TPID和TCI两部分构成,其中TCI中包含了3个字段:PRI,CFI,V
 
 QinQ 报文封装
 
-![](C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\qinq.png)
+
 
 
 

@@ -45,8 +45,7 @@
 转发帧时,通过检查以太网报文中携带的VLAN标签是否为该端口允许通过的标签,可判断出该以太网帧是否能够从端口转发. 如图2-2</p>
 <h3 id="1-1-1-vlan-">1.1.1 VLAN的帧格式</h3>
 <p>在以太帧中添加的VLAN标签长度为32位(bit), 将其直接添加在以太网帧头中,IEEE .802.1Q文档中VLAN标签进行了说明.图2-3所示为VLAN帧的格式.</p>
-<p><img src="C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\图像 1.png" alt="">
-VALN标签由TPID和TCI两部分构成,其中TCI中包含了3个字段:PRI,CFI,VLAN ID.下面列出具体说明.</p>
+<p>VALN标签由TPID和TCI两部分构成,其中TCI中包含了3个字段:PRI,CFI,VLAN ID.下面列出具体说明.</p>
 <ol>
 <li>标签协议标识(Tag Protocol Identifier,TPI):16位,固定取值,0x8100,是IEEE定义的新类型,表明这是一个携带802.1Q标签的帧.</li>
 <li>优先级(Priority):3位,指示以太网帧的优先级.一共有8种优先级,0-7,用于提供有差别的转发服务.</li>
@@ -54,7 +53,6 @@ VALN标签由TPID和TCI两部分构成,其中TCI中包含了3个字段:PRI,CFI,V
 <li>VALN标识(VALN identifier,VALN ID):12位,取值0~4095,就是VLAN标签.结合交换机端口的VLAN配置,能够控制以太网帧的转发.
 VLAN技术的出现,使得现在的交换网络环境中存在两种报文:没有加上VLAN标记的标准以太网帧(Untagged frame)和有VALN 标记的以太网帧(Tagged frame).</li>
 </ol>
-<p><img src="C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\vlan.png" alt=""></p>
 <h3 id="1-1-2-vlan-">1.1.2 VLAN的划分方式</h3>
 <h4 id="1-1-2-1-">1.1.2.1 基于端口</h4>
 <p>​    最为常用的划分方式，据以太网交换机的端口来划分。</p>
@@ -76,11 +74,9 @@ VLAN技术的出现,使得现在的交换网络环境中存在两种报文:没�
 <p>  设备端口接收到tag报文，处理方式和基于端口的VLAN一样；端口允许该tag标识的VLAN通过则作正常转发处理；不允许则丢弃报文。</p>
 </li>
 </ul>
-<p><img src="C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\协议vlan.png" alt=""></p>
 <h4 id="1-1-2-5-voice-vlan">1.1.2.5 Voice VLAN</h4>
 <h2 id="1-2-qinq">1.2 QinQ</h2>
 <p>QinQ 报文封装</p>
-<p><img src="C:\Users\guojicheng.RD\Desktop\mybase\协议\VLAN\qinq.png" alt=""></p>
 </article>
 
 	
